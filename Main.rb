@@ -17,7 +17,7 @@ Rating.initDB('./nf_prize_dataset/training_set')
 puts Rating.count
 
 Rating.where(customer: 862759).each do |r|
-	puts r
+	puts r.movie
 end
 
 movies = Hash.new
