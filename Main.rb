@@ -3,6 +3,10 @@ require 'active_record'
 require_relative 'Movie'
 require_relative 'Rating'
 
+require_relative 'models/Random'
+
+require_relative 'Oracle'
+
 ActiveRecord::Base.establish_connection(
   adapter:  'sqlite3',
   database: 'test.db',
@@ -15,14 +19,19 @@ Rating.initDB('./nf_prize_dataset')
 puts Rating.count
 puts Rating.where(probe: 0).count
 
-Rating.where(customer: 669077).each do |r|
-	puts r.probe
-end
+# Rating.where(customer: 669077).each do |r|
+	# puts r.probe
+# end
 
-movies = Hash.new
+model = Random.new
 
-Movie.list('./nf_prize_dataset/movie_titles.txt') do |m|
-	movies[m.id] = m
-end
+oracle = Oracle.new
 
-puts movies.size
+rmse = oracle.score(model)
+puts 'rmse: ' + rmse.to_s
+
+# movies = Hash.new
+# Movie.list('./nf_prize_dataset/movie_titles.txt') do |m|
+	# movies[m.id] = m
+# end
+# puts movies.size
