@@ -4,6 +4,7 @@ require_relative 'Movie'
 require_relative 'Rating'
 
 require_relative 'models/Random'
+require_relative 'models/Baseline'
 
 require_relative 'Oracle'
 
@@ -23,7 +24,10 @@ puts Rating.where(probe: 0).count
 	# puts r.probe
 # end
 
-model = Random.new
+# model = Random.new
+model = Baseline.new
+
+model.calibrate
 
 oracle = Oracle.new
 

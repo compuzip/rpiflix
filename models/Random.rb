@@ -1,9 +1,9 @@
 class Random
-	def initialize
+	def calibrate
 		# no-op
 	end
 	
-	def rate(customer, movie, date)
+	def rate(movie, customer, date)
 		return rand * 4 + 1
 	end
 end
