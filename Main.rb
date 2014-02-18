@@ -1,5 +1,3 @@
-require 'set'
-require 'sqlite3'
 require 'active_record'
 
 require_relative 'Movie'
@@ -12,12 +10,13 @@ ActiveRecord::Base.establish_connection(
 
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 
-Rating.initDB('./nf_prize_dataset/training_set')
+Rating.initDB('./nf_prize_dataset')
 
 puts Rating.count
+puts Rating.where(probe: 0).count
 
-Rating.where(customer: 862759).each do |r|
-	puts r.movie
+Rating.where(customer: 669077).each do |r|
+	puts r.probe
 end
 
 movies = Hash.new
