@@ -7,18 +7,20 @@ namespace :rpiflix do
 		connection = ActiveRecord::Base.connection
 		
 		connection.drop_table 'movies' if connection.table_exists?('movies')	
-		connection.exec_query "create table movies (id int, year int, title varchar)"
+		connection.exec_query "create table movies (id INTEGER PRIMARY KEY, year int, title varchar, tmdbid int)"
 
 		puts 'populating movies table...'	
 		inserts = []
 
 		File.open(prizeDatasetDir + '/movie_titles.txt') do |f|
 			while line = f.gets
-				line = line.force_encoding('ASCII-8BIT')
+				line = line.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
 				split = line.strip.split(',',3)
 				inserts.push "(#{split[0]}, #{split[1]}, #{connection.quote(split[2])})"
 			end
 		end
+		
+		puts "adding " + inserts.size.to_s + " entries"
 		
 		ActiveRecord::Base.transaction do
 			inserts.each_slice(500) do |s|

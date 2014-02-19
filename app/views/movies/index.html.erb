@@ -1,0 +1,17 @@
+<h1>Movies#index</h1>
+
+<table>
+  <tr>
+    <th>ID</th>
+	<th>release year</th>
+    <th>title</th>
+  </tr>
+ 
+  <% @movies.each do |movie| %>
+    <tr>
+      <td><%= link_to movie.id, movie %></td>
+	  <td><%= movie.year %></td>
+      <td><%= movie.title %></td>
+    </tr>
+  <% end %>
+</table>
