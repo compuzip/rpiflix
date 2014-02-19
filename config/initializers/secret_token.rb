@@ -9,4 +9,4 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-Web::Application.config.secret_key_base = 'b0d76af6d6931c35420a9ce94f5644a2ddd20febc0fee52239422b99e1b0616a81f5edad0e6f68d19a3c40301caaac8c00f19e960bd57e7aa6aaf8998608ec40'
+Rpiflix::Application.config.secret_key_base = 'fd03e188ada505c93c3b305f5515045b068881100aab269b83d85db26dcdef876d0a8e90c168241d28144615dad058741b4d70df8ed75cfda92d94533d6487c8'

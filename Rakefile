@@ -3,4 +3,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-Web::Application.load_tasks
+Rpiflix::Application.load_tasks
