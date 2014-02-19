@@ -5,3 +5,6 @@ gem install activerecord
 
 gem install composite_primary_keys
 
+gem install rails
+
+gem install themoviedb

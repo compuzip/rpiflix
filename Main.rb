@@ -17,12 +17,14 @@ ActiveRecord::Base.establish_connection(
 
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 
-# DBLoader.resetDB
+DBLoader.resetDB
 
-DBLoader.populateDB('./nf_prize_dataset')
+DBLoader.populateRatings('./nf_prize_dataset')
+DBLoader.populateMovies('./nf_prize_dataset')
 
 puts Rating.count
 puts Probe.count
+puts Movie.count
 
 # Rating.where(customer: 669077).each do |r|
 	# puts r.probe

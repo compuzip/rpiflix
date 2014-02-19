@@ -6,9 +6,36 @@ class DBLoader < ActiveRecord::Base
 
 		connection.drop_table 'ratings' if connection.table_exists?('ratings')
 		connection.drop_table 'probes' if connection.table_exists?('probes')
+		connection.drop_table 'movies' if connection.table_exists?('movies')
+		
+		connection.exec_query 'VACUUM'
 	end
 
-	def self.populateDB(prizeDatasetDir)
+	def self.populateMovies(prizeDatasetDir)	
+		if not connection.table_exists?('movies')
+			connection.exec_query "create table movies (id int, year int, title varchar)"
+
+			puts 'populating movies table...'
+			
+			inserts = []
+		
+			File.open(prizeDatasetDir + '/movie_titles.txt') do |f|
+				while line = f.gets
+					split = line.strip.split(',',3)
+					inserts.push "(#{split[0]}, #{split[1]}, #{connection.quote(split[2])})"
+				end
+			end
+			
+			transaction do
+				inserts.each_slice(500) do |s|
+					stmt = "INSERT INTO movies(id, year, title) VALUES #{s.join(", ")}"
+					connection.exec_query stmt
+				end
+			end
+		end
+	end
+	
+	def self.populateRatings(prizeDatasetDir)
 		if not connection.table_exists?('ratings')
 			connection.exec_query "create table ratings (movie int, customer int, rating int, date date)"
 			connection.exec_query "create table probes (movie int, customer int, rating int, date date)"
