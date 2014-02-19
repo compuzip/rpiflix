@@ -1,7 +1,9 @@
 require 'active_record'
 
+require_relative 'DBLoader'
 require_relative 'Movie'
 require_relative 'Rating'
+require_relative 'Probe'
 
 require_relative 'models/Random'
 require_relative 'models/Baseline'
@@ -15,10 +17,12 @@ ActiveRecord::Base.establish_connection(
 
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 
-Rating.initDB('./nf_prize_dataset')
+# DBLoader.resetDB
+
+DBLoader.populateDB('./nf_prize_dataset')
 
 puts Rating.count
-puts Rating.where(probe: 0).count
+puts Probe.count
 
 # Rating.where(customer: 669077).each do |r|
 	# puts r.probe
