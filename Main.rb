@@ -17,7 +17,7 @@ ActiveRecord::Base.establish_connection(
 
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 
-DBLoader.resetDB
+# DBLoader.resetDB
 
 DBLoader.populateRatings('./nf_prize_dataset')
 DBLoader.populateMovies('./nf_prize_dataset')
