@@ -1,0 +1,13 @@
+<h1>Movies#index</h1>
+
+<table border="1">
+  <tr>
+    <th>name</th>
+  </tr>
+ 
+  <% @models.each do |model| %>
+    <tr>
+      <td><%= model %></td>
+    </tr>
+  <% end %>
+</table>

@@ -8,6 +8,8 @@ Rpiflix::Application.routes.draw do
 
   resources :movies, only: [:index, :show]
   
+  resources :models, only: [:index, :show]
+  
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
 
