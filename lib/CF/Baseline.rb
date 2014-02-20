@@ -1,6 +1,6 @@
 module CF
 	class Baseline
-		def calibrate
+		def train
 			# no-op
 		end
 		

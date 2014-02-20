@@ -116,4 +116,21 @@ namespace :rpiflix do
 			end
 		end
 	end
+	
+	desc "TODO"
+	task populateModels: :environment do
+		connection = ActiveRecord::Base.connection
+		
+		connection.drop_table 'models' if connection.table_exists?('models')
+		connection.exec_query "create table models (id varchar PRIMARY KEY, state varchar)"
+		
+		Dir[File.join(Rails.root, "/lib/CF/*.rb")].each do |f| 
+			name = File.basename(f, ".rb")
+			if name != "Base"
+				Model.create(:id => name)
+			end
+		end
+		
+		puts Model.count
+	end
 end

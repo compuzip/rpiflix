@@ -1,9 +1,6 @@
 module CF
 	class Random < Base
-		puts "registering RANDOM"
-		register "Random"
-	
-		def calibrate
+		def train
 			# no-op
 		end
 		

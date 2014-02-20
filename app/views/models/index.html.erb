@@ -3,11 +3,17 @@
 <table border="1">
   <tr>
     <th>name</th>
+	<th>state</th>
+	<th>train?</th>
+	<th>reset?</th>
   </tr>
  
   <% @models.each do |model| %>
     <tr>
-      <td><%= model %></td>
+      <td><%= model.id %></td>
+	  <td><%= model.state %></td>
+	  <td>TRAIN</td>
+	  <td>RESET</td>
     </tr>
   <% end %>
 </table>
