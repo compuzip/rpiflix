@@ -5,6 +5,7 @@ class MoviesController < ApplicationController
   
 	def show
 		@movie = Movie.find(params[:id])
-		
+	 
+		@movie.tmdbid = @movie.findTmdbID	
 	end
 end
