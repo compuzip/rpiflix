@@ -6,6 +6,7 @@
 	<th>release year</th>
 	<th>tmdbID</th>
 	<th>poster</th>	
+	<th>Rating</th>
 	<th>title</th>
   </tr>
  
@@ -21,6 +22,8 @@
 		<img src="<%= @tmdbconfig.base_url + 'w92' + movie.tmdbposter %>" />
 	  <% end %>
 	  </td>
+	  
+	  <td><%= movie.averageRating %></td>
 	  
 	  <td><%= movie.title %></td>
     </tr>

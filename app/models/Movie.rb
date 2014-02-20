@@ -12,6 +12,10 @@ class Movie < ActiveRecord::Base
 			save
 		end
 	end
+	
+	def averageRating
+		return Rating.where(movie: id).average('rating')
+	end
 
 	private
 	def findTmdbID

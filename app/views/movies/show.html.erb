@@ -14,6 +14,11 @@
 </p>
 
 <p>
+  <strong>Rating:</strong>
+  <%= "%2.2f" % @ratingAvg  %>&nbsp;&nbsp;(<%= @ratingCount %>)
+</p>
+
+<p>
   <strong>tmdb ID:</strong>
   <%= @movie.tmdbid %>
 </p>
