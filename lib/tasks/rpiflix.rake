@@ -7,7 +7,7 @@ namespace :rpiflix do
 		connection = ActiveRecord::Base.connection
 		
 		connection.drop_table 'movies' if connection.table_exists?('movies')	
-		connection.exec_query "create table movies (id INTEGER PRIMARY KEY, year int, title varchar, tmdbid int)"
+		connection.exec_query "create table movies (id INTEGER PRIMARY KEY, year int, title varchar, tmdbid int, tmdbposter varchar, tmdbgenre varchar)"
 
 		puts 'populating movies table...'	
 		inserts = []

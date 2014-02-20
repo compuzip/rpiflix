@@ -1,17 +1,28 @@
 <h1>Movies#index</h1>
 
-<table>
+<table border="1">
   <tr>
     <th>ID</th>
 	<th>release year</th>
-    <th>title</th>
+	<th>tmdbID</th>
+	<th>poster</th>	
+	<th>title</th>
   </tr>
  
   <% @movies.each do |movie| %>
     <tr>
       <td><%= link_to movie.id, movie %></td>
 	  <td><%= movie.year %></td>
-      <td><%= movie.title %></td>
+      
+	  <td><%= movie.tmdbid %></td>
+	  
+	  <td>
+	  <% if movie.tmdbposter %>
+		<img src="<%= @tmdbconfig.base_url + 'w92' + movie.tmdbposter %>" />
+	  <% end %>
+	  </td>
+	  
+	  <td><%= movie.title %></td>
     </tr>
   <% end %>
 </table>

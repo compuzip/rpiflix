@@ -1,5 +1,19 @@
 class Movie < ActiveRecord::Base
 
+	def populateTmdbData!
+		if not tmdbid
+			self.tmdbid = findTmdbID
+			
+			if tmdbid > 0
+				details = Tmdb::Movie.detail(tmdbid)
+				self.tmdbposter = details.poster_path
+			end
+			
+			save
+		end
+	end
+
+	private
 	def findTmdbID
 		# puts "searching for ~" + title.to_s + "~, released " + year.to_s
 	
@@ -18,7 +32,7 @@ class Movie < ActiveRecord::Base
 				yr = r["release_date"][0,4]
 				# puts "yr: " + yr
 				
-				if year.to_s == yr
+				if (yr.to_i - year).abs < 2
 					# puts "******************* FOUND MATCH"
 					return m.id
 				end

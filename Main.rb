@@ -1,4 +1,5 @@
 require 'active_record'
+require 'themoviedb'
 
 # require_relative 'DBLoader'
 require_relative 'app/models/Movie'
@@ -10,12 +11,15 @@ require_relative 'app/models/Movie'
 
 # require_relative 'Oracle'
 
+
+require_relative 'config/initializers/themoviedb'
+
 ActiveRecord::Base.establish_connection(
   adapter:  'sqlite3',
   database: 'db/development.sqlite3',
 )
 
-ActiveRecord::Base.logger = Logger.new(STDOUT)
+# ActiveRecord::Base.logger = Logger.new(STDOUT)
 
 
 # puts Rating.count
@@ -39,18 +43,22 @@ ActiveRecord::Base.logger = Logger.new(STDOUT)
 # end
 # puts movies.size
 
-require 'themoviedb'
 
-Tmdb::Api.key("f3865765e56078004718508043032905")
 
-# a = Tmdb::Movie.find("batman")
+config = Tmdb::Configuration.new
+puts config
+puts config.base_url
+puts config.poster_sizes
 
-# a.each do |m|
-	# puts m
+a = Tmdb::Movie.find("batman")
+
+a.each do |m|
+	puts m
+	puts m.poster_path
 	# puts m.id
 	# puts m.original_title
 	# puts m.release_date
-# end
+end
 
 puts Movie.count
 

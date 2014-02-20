@@ -17,3 +17,7 @@
   <strong>tmdb ID:</strong>
   <%= @movie.tmdbid %>
 </p>
+
+<% if @poster_url %>
+  <img src="<%= @poster_url %>" />
+<% end %>
