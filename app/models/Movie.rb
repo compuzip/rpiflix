@@ -13,10 +13,6 @@ class Movie < ActiveRecord::Base
 		end
 	end
 	
-	def averageRating
-		return Rating.where(movie: id).average('rating')
-	end
-
 	private
 	def findTmdbID
 		# puts "searching for ~" + title.to_s + "~, released " + year.to_s

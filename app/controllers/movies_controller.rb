@@ -14,9 +14,5 @@ class MoviesController < ApplicationController
 		else
 			@poster_url = nil
 		end
-		
-		@ratingCount = Rating.where(movie: @movie.id).count
-		
-		@ratingAvg = @ratingCount > 0 ? Rating.where(movie: @movie.id).average('rating') : 0.0
 	end
 end

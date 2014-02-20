@@ -23,7 +23,7 @@
 	  <% end %>
 	  </td>
 	  
-	  <td><%= movie.averageRating %></td>
+	  <td><%= "%2.2f" % movie.ratingAvg  %>&nbsp;&nbsp;(<%= movie.ratingCount %>)</td>
 	  
 	  <td><%= movie.title %></td>
     </tr>

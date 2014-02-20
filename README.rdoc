@@ -6,14 +6,21 @@ application up and running.
 Things you may want to cover:
 
 * Ruby version
+2.0.0p353 x64-mingw32
 
 * System dependencies
+devkit: https://github.com/oneclick/rubyinstaller/wiki/Development-Kit
+gem install rails
+bundle install
 
 * Configuration
 
 * Database creation
 
 * Database initialization
+rake rpiflix:populateMovies
+rake rpiflix:populateRatings
+rake rpiflix:calculateStats
 
 * How to run the test suite
 

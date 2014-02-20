@@ -7,7 +7,16 @@ namespace :rpiflix do
 		connection = ActiveRecord::Base.connection
 		
 		connection.drop_table 'movies' if connection.table_exists?('movies')	
-		connection.exec_query "create table movies (id INTEGER PRIMARY KEY, year int, title varchar, tmdbid int, tmdbposter varchar, tmdbgenre varchar)"
+		connection.exec_query "create table movies (
+			id INTEGER PRIMARY KEY, 
+			year int, 
+			title varchar, 
+			tmdbid int, 
+			tmdbposter varchar, 
+			tmdbgenre varchar,
+			ratingCount int,
+			ratingAvg float
+			)"
 
 		puts 'populating movies table...'	
 		inserts = []
@@ -94,5 +103,17 @@ namespace :rpiflix do
 		
 		connection.exec_query "CREATE INDEX 'probe_movies' ON 'probes' ('movie')"
 		connection.exec_query "CREATE INDEX 'probe_customers' ON 'probes' ('customer')"	
+	end
+	
+	desc "TODO"
+	task calculateStats: :environment do
+		ActiveRecord::Base.transaction do
+			Movie.all.each do |m|
+				puts m.id.to_s + ": " + m.title
+				m.ratingCount = Rating.where(movie: m.id).count
+				m.ratingAvg = m.ratingCount > 0 ? Rating.where(movie: m.id).average('rating') : 0.0
+				m.save
+			end
+		end
 	end
 end
