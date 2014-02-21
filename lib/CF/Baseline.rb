@@ -1,7 +1,19 @@
 module CF
-	class Baseline
+	class Baseline < Base
+		def initialize(model)
+			super(model)
+		end
+	
 		def train
-			# no-op
+			train_begin
+			
+			train_end
+		end
+		
+		def reset
+			reset_begin
+			
+			reset_end
 		end
 		
 		def rate(movie, customer, date)
