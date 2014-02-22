@@ -29,40 +29,5 @@ ActiveRecord::Schema.define(version: 20140221234457) do
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
-  create_table "models", force: true do |t|
-    t.string "state", limit: nil
-  end
-
-  add_index "models", ["id"], name: "sqlite_autoindex_models_1", unique: true
-
-  create_table "movies", force: true do |t|
-    t.integer "year"
-    t.string  "title",       limit: nil
-    t.integer "tmdbid"
-    t.string  "tmdbposter",  limit: nil
-    t.string  "tmdbgenre",   limit: nil
-    t.integer "ratingCount"
-    t.float   "ratingAvg"
-  end
-
-  create_table "probes", id: false, force: true do |t|
-    t.integer "movie"
-    t.integer "customer"
-    t.integer "rating"
-    t.date    "date"
-  end
-
-  add_index "probes", ["customer"], name: "probe_customers"
-  add_index "probes", ["movie"], name: "probe_movies"
-
-  create_table "ratings", id: false, force: true do |t|
-    t.integer "movie"
-    t.integer "customer"
-    t.integer "rating"
-    t.date    "date"
-  end
-
-  add_index "ratings", ["customer"], name: "rating_customers"
-  add_index "ratings", ["movie"], name: "rating_movies"
 
 end
