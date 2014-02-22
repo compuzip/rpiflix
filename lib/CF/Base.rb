@@ -3,25 +3,17 @@ module CF
 		def initialize(model)
 			@model = model
 		end
+		
+		def train
+			@model.update(state: :training)
+			train_do
+			@model.update(state: :trained)
+		end
 	
-		def train_begin
-			@model.state = :training
-			@model.save
-		end
-		
-		def train_end
-			@model.state = :trained
-			@model.save
-		end
-		
-		def reset_begin
-			@model.state = :resetting
-			@model.save
-		end
-		
-		def reset_end
-			@model.state = :reset
-			@model.save
+		def reset
+			@model.update(state: :resetting)
+			reset_do
+			@model.update(state: :reset)
 		end
 	end
 end

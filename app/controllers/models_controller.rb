@@ -5,16 +5,14 @@ class ModelsController < ApplicationController
 	
 	def train
 		model = Model.find(params[:id])
-		m = model.handler
-		m.train
+		model.handler.delay.train
 		
 		redirect_to action: 'index', notice: ('training model ' + model.id)
 	end
 	
 	def reset
 		model = Model.find(params[:id])
-		m = model.handler
-		m.reset
+		model.handler.delay.reset
 		
 		redirect_to action: 'index', notice: ('resetting model ' + model.id)
 	end

@@ -45,3 +45,5 @@ end
 # gem 'debugger', group: [:development, :test]
 
 gem 'themoviedb'
+gem 'delayed_job_active_record'
+gem 'daemons'

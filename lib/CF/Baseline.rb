@@ -4,16 +4,10 @@ module CF
 			super(model)
 		end
 	
-		def train
-			train_begin
-			
-			train_end
+		def train_do
 		end
 		
-		def reset
-			reset_begin
-			
-			reset_end
+		def reset_do
 		end
 		
 		def rate(movie, customer, date)

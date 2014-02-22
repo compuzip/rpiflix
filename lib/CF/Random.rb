@@ -4,18 +4,12 @@ module CF
 			super(model)
 		end
 		
-		def train
-			train_begin
-			
-			sleep 5
-			
-			train_end
+		def train_do
+			sleep 10
 		end
 		
-		def reset
-			reset_begin
-			
-			reset_end
+		def reset_do
+			sleep 10
 		end
 		
 		def rate(movie, customer, date)
