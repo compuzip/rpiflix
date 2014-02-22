@@ -1,9 +1,5 @@
 module CF
-	class Random < Base
-		def initialize(model)
-			super(model)
-		end
-		
+	class Random < Base		
 		def train
 			sleep 5
 		end

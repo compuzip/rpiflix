@@ -1,9 +1,5 @@
 module CF
-	class Baseline < Base
-		def initialize(model)
-			super(model)
-		end
-	
+	class Baseline < Base	
 		def train
 		end
 		
