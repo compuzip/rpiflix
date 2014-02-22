@@ -1,0 +1,17 @@
+<h1>Probes#index</h1>
+
+<table border="1">
+  <tr>
+    <th>customer</th>
+	<th>movie</th>
+
+  </tr>
+ 
+  <% @probes.each do |probe| %>
+    <tr>     
+	  <td><%= probe.customer %></td>
+	  <td><%= probe.movie %></td>
+	  
+    </tr>
+  <% end %>
+</table>
