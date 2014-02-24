@@ -8,14 +8,18 @@
   <tr>
     <th>name</th>
 	<th>state</th>
+	<th>progress</th>
+	<th>updated</th>
 	<th>train?</th>
 	<th>reset?</th>
   </tr>
  
   <% @models.each do |model| %>
     <tr>
-      <td><%= model.id %></td>
+      <td><%= model.clazz %></td>
 	  <td><%= model.state %></td>
+	  <td><%= '%3.3f' % (100.0 * model.progress) %>%</td>
+	  <td><%= model.updated_at %></td>
 	  <td><%= link_to "Train", train_model_path(model), method: :post %></td>
 	  <td><%= link_to "Reset", reset_model_path(model), method: :post %></td>
     </tr>

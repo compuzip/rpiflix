@@ -119,18 +119,34 @@ namespace :rpiflix do
 	
 	desc "TODO"
 	task populateModels: :environment do
+		ActiveRecord::Base.logger = Logger.new(STDOUT)
+		
 		connection = ActiveRecord::Base.connection
 		
 		connection.drop_table 'models' if connection.table_exists?('models')
-		connection.exec_query "create table models (id varchar PRIMARY KEY, state varchar)"
 		
-		Dir[File.join(Rails.root, "/lib/CF/*.rb")].each do |f| 
+		connection.create_table('models') do |t|
+			t.string	:clazz
+			t.string	:state, 	default: 'new'
+			t.float		:progress,	default: 0.0
+			t.time		:updated_at
+		end
+		
+		Dir[File.join(Rails.root, "/lib/CF/*.rb")].each do |f|
 			name = File.basename(f, ".rb")
 			if name != "Base"
-				Model.create(:id => name)
+				Model.create(:clazz => name)
 			end
 		end
 		
-		puts Model.count
+		puts 'populated ' + Model.count.to_s + ' models'
+	end
+	
+	desc "TODO"
+	task doSomething: :environment do
+		ActiveRecord::Base.logger = Logger.new(STDOUT)
+	
+		m = Model.where(clazz: :Baseline).take
+		m.handler.train
 	end
 end

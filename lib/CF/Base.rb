@@ -2,35 +2,40 @@ module CF
 	class Base
 		def initialize(id)
 			@modelID = id
+			@progress_prev = '0'
 		end
 		
 		def enqueue(job)
-			Model.find(@modelID).update(state: :enqueued)
+			Model.find(@modelID).update(state: :queued)
+			Model.find(@modelID).update(progress: 0)
 		end
 		
+		def train
+			Model.find(@modelID).update(state: :training)
+			Model.find(@modelID).update(progress: 0)
+			train_do
+			Model.find(@modelID).update(state: :trained)
+			Model.find(@modelID).update(progress: 1)
+		end
 		
-		def before(job)
-			case job.payload_object.method_name.to_s
-			when "train"
-				Model.find(@modelID).update(state: :training)
-			when "reset"
-				Model.find(@modelID).update(state: :resetting)
-			else
-				Model.find(@modelID).update(state: :UNKNOWN)
-			end
+		def reset
+			Model.find(@modelID).update(state: :resetting)
+			Model.find(@modelID).update(progress: 0)
+			reset_do
+			Model.find(@modelID).update(state: :reset)
+			Model.find(@modelID).update(progress: 1)
 		end
 
-		def after(job)
-			case job.payload_object.method_name.to_s
-			when "train"
-				Model.find(@modelID).update(state: :trained)
-			when "reset"
-				Model.find(@modelID).update(state: :reset)
-			else
-				Model.find(@modelID).update(state: :UNKNOWN)
+		def progress(p)
+			# limit to three digits to avoid frequent updates
+			prog = '%1.3f' % p
+			
+			if prog != @progress_prev
+				Model.find(@modelID).update(progress: p)
+				@progress_prev = prog
 			end
 		end
-
+		
 		# def success(job)
 			# record_stat 'newsletter_job/success'
 		# end

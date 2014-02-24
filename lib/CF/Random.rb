@@ -1,10 +1,10 @@
 module CF
 	class Random < Base		
-		def train
+		def train_do
 			sleep 5
 		end
 		
-		def reset
+		def reset_do
 			sleep 5
 		end
 		

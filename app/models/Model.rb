@@ -1,5 +1,6 @@
 class Model < ActiveRecord::Base
 	def handler
-		CF.const_get(id, false).new(id)
+		# instantiate corresponding class from CF::
+		CF.const_get(clazz, false).new(id)
 	end
 end
