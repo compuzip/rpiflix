@@ -18,6 +18,18 @@ bundle install
 * Database creation
 db:schema:load
 
+extract netflix dataset, creating the following structure
+./db/nf_prize_dataset/
+                      movie_titles.txt
+					  probe.txt
+					  qualifying.txt
+					  /training_set/
+					                mv_0000001.txt
+									mv_0000002.txt
+									...
+									mv_0017770.txt
+
+									
 * Database initialization
 rake rpiflix:populateMovies
 rake rpiflix:populateRatings

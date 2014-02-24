@@ -12,6 +12,7 @@
 	<th>updated</th>
 	<th>train?</th>
 	<th>reset?</th>
+	<th>score...</th>
   </tr>
  
   <% @models.each do |model| %>
@@ -22,6 +23,7 @@
 	  <td><%= model.updated_at %></td>
 	  <td><%= link_to "Train", train_model_path(model), method: :post %></td>
 	  <td><%= link_to "Reset", reset_model_path(model), method: :post %></td>
+	  <td><%= link_to "Score", score_model_path(model) %></td>
     </tr>
   <% end %>
 </table>

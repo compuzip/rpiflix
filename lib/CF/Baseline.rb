@@ -57,7 +57,7 @@ module CF
 			# custAvg = Rating.where(customer: customer).average('rating')
 			# movieAvg = Rating.where(movie: movie).average('rating')
 			
-			custAvg = CustomerAvg.find(customer)
+			custAvg = CustomerAvg.find(customer).avg
 			movieAvg = Movie.find(movie).ratingAvg
 			
 			return (custAvg + movieAvg) / 2.0

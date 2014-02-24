@@ -10,9 +10,10 @@ Rpiflix::Application.routes.draw do
   
   resources :probes, only: [:index, :show]
   
-  resources :models, only: [:index, :show] do
+  resources :models, only: [:index] do
 	post 'train', on: :member
 	post 'reset', on: :member
+	get 'score', on: :member
   end
   
   # Example of regular route:

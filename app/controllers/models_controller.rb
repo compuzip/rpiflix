@@ -16,4 +16,10 @@ class ModelsController < ApplicationController
 		
 		redirect_to action: 'index', notice: ('resetting model ' + model.clazz)
 	end
+	
+	def score
+		model = Model.find(params[:id])
+		@score = CF::Oracle.score(model.handler)
+		puts @score
+	end
 end
