@@ -28,6 +28,4 @@ ActiveRecord::Schema.define(version: 20140221234457) do
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
-
-
 end

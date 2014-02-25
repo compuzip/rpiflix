@@ -17,7 +17,7 @@
  
   <% @models.each do |model| %>
     <tr>
-      <td><%= model.clazz %></td>
+      <td><%= model.klass %></td>
 	  <td><%= model.state %></td>
 	  <td><%= '%3.3f' % (100.0 * model.progress) %>%</td>
 	  <td><%= model.updated_at %></td>

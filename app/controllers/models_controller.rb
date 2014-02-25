@@ -7,14 +7,14 @@ class ModelsController < ApplicationController
 		model = Model.find(params[:id])
 		model.handler.delay.train
 		
-		redirect_to action: 'index', notice: ('training model ' + model.clazz)
+		redirect_to action: 'index', notice: ('training model ' + model.klass)
 	end
 	
 	def reset
 		model = Model.find(params[:id])
 		model.handler.delay.reset
 		
-		redirect_to action: 'index', notice: ('resetting model ' + model.clazz)
+		redirect_to action: 'index', notice: ('resetting model ' + model.klass)
 	end
 	
 	def score

@@ -1,5 +1,4 @@
 class Movie < ActiveRecord::Base
-
 	def populateTmdbData!
 		if not tmdbid
 			self.tmdbid = findTmdbID

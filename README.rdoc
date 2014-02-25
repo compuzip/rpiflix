@@ -10,35 +10,52 @@ Things you may want to cover:
 
 * System dependencies
 devkit: https://github.com/oneclick/rubyinstaller/wiki/Development-Kit
-gem install rails
-bundle install
+
+install rails, if missing
+	gem install rails
+
+install all other gems required by rpiflix
+	bundle install
+
 
 * Configuration
 
 * Database creation
-db:schema:load
+create 'delayed_jobs' table
+	rake db:schema:load
+	
 
 extract netflix dataset, creating the following structure
-./db/nf_prize_dataset/
-                      movie_titles.txt
-					  probe.txt
-					  qualifying.txt
-					  /training_set/
-					                mv_0000001.txt
-									mv_0000002.txt
-									...
-									mv_0017770.txt
+	./db/nf_prize_dataset/
+	----------------------movie_titles.txt
+	----------------------probe.txt
+	----------------------qualifying.txt
+	----------------------training_set/
+	-----------------------------------mv_0000001.txt
+	-----------------------------------mv_0000002.txt
+	-----------------------------------...
+	-----------------------------------mv_0017770.txt
 
 									
 * Database initialization
-rake rpiflix:populateMovies
-rake rpiflix:populateRatings
-rake rpiflix:calculateStats
+populate the 'movies' table
+	rake rpiflix:populateMovies
+
+populate 'ratings' and 'probes' tables ... this takes a while
+	rake rpiflix:populateRatings
+
+update movies.ratingCount and movies.ratingAvg; can take a few minutes
+	rake rpiflix:calculateStats
+
+populate 'models' table
+	rake rpiflix:populateModels
 
 * How to run the test suite
 
 * Services (job queues, cache servers, search engines, etc.)
-rake jobs:work --sleep-delay 1
+
+launch the delayed job worker
+	rake jobs:work
 
 * Deployment instructions
 
