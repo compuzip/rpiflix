@@ -4,7 +4,8 @@ source 'https://rubygems.org'
 gem 'rails', '4.0.3'
 
 # Use sqlite3 as the database for Active Record
-gem 'sqlite3'
+gem 'activerecord-jdbcsqlite3-adapter',	:platforms => :jruby
+gem 'sqlite3', 							:platforms => :mri
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 4.0.0'
@@ -47,3 +48,5 @@ end
 gem 'themoviedb'
 gem 'delayed_job_active_record'
 gem 'daemons'
+
+gem 'thread'

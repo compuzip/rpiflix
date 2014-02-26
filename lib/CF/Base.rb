@@ -2,7 +2,9 @@ module CF
 	class Base
 		def initialize(id)
 			@modelID = id
-			@progress_prev = '0'
+			@progress_prev_s = '0'
+			@progress_prev_f = 0.0
+			@mutex = Mutex.new
 		end
 		
 		def enqueue(job)
@@ -26,14 +28,18 @@ module CF
 			Model.find(@modelID).update(progress: 1)
 		end
 
-		def progress(p)
-			# limit to three digits to avoid frequent updates
-			prog = '%1.3f' % p
-			
-			if prog != @progress_prev
-				Model.find(@modelID).update(progress: p)
-				@progress_prev = prog
-			end
+		def progress(prog)
+			@mutex.synchronize {
+				# limit to three digits to avoid frequent updates
+				prog_s = '%1.3f' % prog
+				
+				# prevent backwards updates
+				if prog_s != @progress_prev_s 
+					Model.find(@modelID).update(progress: prog)
+					@progress_prev_s = prog_s
+					@progress_prev_f = prog
+				end
+			}
 		end
 		
 		def score
