@@ -4,22 +4,26 @@
 #   Ensure the SQLite 3 gem is defined in your Gemfile
 #   gem 'sqlite3'
 development:
-  adapter: sqlite3
-  database: db/development.sqlite3
-  pool: 20
-  timeout: 5000
+  adapter: jdbchsqldb
+  url: jdbc:hsqldb:file:db/hsqldb/hypersonic_development;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.write_delay=false;hsqldb.log_data=true
+
+
+  # adapter: hsqldb
+  # database: file:db/development.hsqldb
+  # pool: 20
+  # timeout: 5000
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
-  adapter: sqlite3
-  database: db/test.sqlite3
+  adapter: hsqldb
+  database: db/test.hsqldb
   pool: 5
   timeout: 5000
 
 production:
-  adapter: sqlite3
-  database: db/production.sqlite3
-  pool: 20
-  timeout: 5000
+  adapter: jdbchsqldb
+  url: jdbc:hsqldb:file:db/hsqldb/hypersonic_development;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.write_delay=false;hsqldb.log_data=true
+  # pool: 20
+  # timeout: 5000

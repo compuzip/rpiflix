@@ -5,18 +5,22 @@ namespace :rpiflix do
 		
 		ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[Rails.env])
 		connection = ActiveRecord::Base.connection
+
+		# puts 'table exists?: ' + connection.table_exists?('movies').to_s
+		# if connection.table_exists?('movies')
+			# puts 'old records: ' + Movie.count.to_s
+		# end
 		
 		connection.drop_table 'movies' if connection.table_exists?('movies')	
-		connection.exec_query "create table movies (
-			id INTEGER PRIMARY KEY, 
-			year int, 
-			title varchar, 
-			tmdbid int, 
-			tmdbposter varchar, 
-			tmdbgenre varchar,
-			ratingCount int,
-			ratingAvg float
-			)"
+		
+		connection.create_table('movies') do |t|
+			t.integer	:year
+			t.string	:title
+			t.integer	:tmdbid
+			t.string	:tmdbposter
+			t.integer	:ratingCount
+			t.float		:ratingAvg
+		end
 
 		puts 'populating movies table...'	
 		inserts = []
@@ -37,6 +41,8 @@ namespace :rpiflix do
 				connection.exec_query stmt
 			end
 		end
+		
+		# connection.exec_query "SHUTDOWN"
 	end
 
 	desc "TODO"
@@ -66,36 +72,40 @@ namespace :rpiflix do
 		end
 
 		puts "parsing training set..."
-		ActiveRecord::Base.transaction do
-			Dir.glob(prizeDatasetDir + "/training_set/mv*.txt") do |mv|
-				puts mv
+		# ActiveRecord::Base.transaction do
+			Dir.glob(prizeDatasetDir + "/training_set/mv*.txt").each_slice(500) do |mv_slice|
+				ActiveRecord::Base.transaction do
+					mv_slice.each do |mv|
+						puts mv
 
-				File.open(mv) do |f|
-					ratingInserts = []
-					probeInserts = []
-					movieID = f.gets.delete(":").strip
+						File.open(mv) do |f|
+							ratingInserts = []
+							probeInserts = []
+							movieID = f.gets.delete(":").strip
 
-					while line = f.gets
-						split = line.strip.split(',',3)
-						if probes.include?(movieID + "_" + split[0])
-							probeInserts.push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
-						else
-							ratingInserts.push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
+							while line = f.gets
+								split = line.strip.split(',',3)
+								if probes.include?(movieID + "_" + split[0])
+									probeInserts.push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
+								else
+									ratingInserts.push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
+								end
+							end
+
+							ratingInserts.each_slice(500) do |s|
+								stmt = "INSERT INTO ratings(movie, customer, rating, date) VALUES #{s.join(", ")}"
+								connection.exec_query stmt
+							end
+							
+							probeInserts.each_slice(500) do |s|
+								stmt = "INSERT INTO probes(movie, customer, rating, date) VALUES #{s.join(", ")}"
+								connection.exec_query stmt
+							end
 						end
-					end
-
-					ratingInserts.each_slice(500) do |s|
-						stmt = "INSERT INTO ratings(movie, customer, rating, date) VALUES #{s.join(", ")}"
-						connection.exec_query stmt
-					end
-					
-					probeInserts.each_slice(500) do |s|
-						stmt = "INSERT INTO probes(movie, customer, rating, date) VALUES #{s.join(", ")}"
-						connection.exec_query stmt
 					end
 				end
 			end
-		end
+		# end
 
 		puts "creating indices..."
 		connection.exec_query "CREATE INDEX 'rating_movies' ON 'ratings' ('movie')"

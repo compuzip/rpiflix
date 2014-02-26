@@ -8,6 +8,8 @@ Things you may want to cover:
 * Ruby version
 2.0.0p353 x64-mingw32
 
+jruby 1.7.11 (1.9.3p392): http://jruby.org.s3.amazonaws.com/downloads/1.7.11/jruby_windows_x64_1_7_11.exe
+
 * System dependencies
 devkit: https://github.com/oneclick/rubyinstaller/wiki/Development-Kit
 
