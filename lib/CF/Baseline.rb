@@ -13,11 +13,13 @@ module CF
 			connection = CustomerAvg.connection
 			
 			connection.create_table(CustomerAvg.table_name) do |t|
-				t.float :avg
-				t.integer :count
+				t.float 	:rating_avg
+				t.integer	:rating_count
 			end
 			
-			# res = Rating.group(:customer).pluck('COUNT(*)', 'SUM(rating)')
+			puts 'running large group...'
+			res = Rating.group(:customer).pluck(:customer, 'COUNT(*)', 'SUM(rating)')
+			puts 'done'
 			
 			customers = Rating.distinct.pluck(:customer)
 
@@ -46,6 +48,7 @@ module CF
 							# db_slice.each do |c|
 								# rat = ratings.select{|r| r[0] == c}.map{|r| r[1]}
 								# rat = ratings2[c].map{|r| r[1]}
+								# rat = Rating.where(customer: c).pluck(:rating)
 								# count = rat.size
 								# avg = rat.reduce(:+) / (1.0 * count)
 								# data[c] = [count, avg]
@@ -86,7 +89,7 @@ module CF
 			while data = channel.receive!
 				connection.transaction do
 					data.each do |k, v|
-						CustomerAvg.create({ :id => k, :count => v[0], :avg => v[1]})
+						CustomerAvg.create({ :id => k, :rating_count => v[0], :rating_avg => v[1]})
 					end
 				end
 			end

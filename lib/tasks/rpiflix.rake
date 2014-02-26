@@ -6,10 +6,10 @@ namespace :rpiflix do
 		ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[Rails.env])
 		connection = ActiveRecord::Base.connection
 
-		# puts 'table exists?: ' + connection.table_exists?('movies').to_s
-		# if connection.table_exists?('movies')
-			# puts 'old records: ' + Movie.count.to_s
-		# end
+		puts 'table exists?: ' + connection.table_exists?('movies').to_s
+		if connection.table_exists?('movies')
+			puts 'old records: ' + Movie.count.to_s
+		end
 		
 		connection.drop_table 'movies' if connection.table_exists?('movies')	
 		
@@ -18,8 +18,8 @@ namespace :rpiflix do
 			t.string	:title
 			t.integer	:tmdbid
 			t.string	:tmdbposter
-			t.integer	:ratingCount
-			t.float		:ratingAvg
+			t.integer	:rating_count
+			t.float		:rating_avg
 		end
 
 		puts 'populating movies table...'	
@@ -46,8 +46,10 @@ namespace :rpiflix do
 	end
 
 	desc "TODO"
-	task populateRatings: :environment do		
+	task populateRatings: :environment do
 		prizeDatasetDir = "./db/nf_prize_dataset"
+		
+		# ActiveRecord::Base.logger = Logger.new(STDOUT)
 		
 		ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[Rails.env])
 		connection = ActiveRecord::Base.connection
@@ -55,9 +57,15 @@ namespace :rpiflix do
 		connection.drop_table 'ratings' if connection.table_exists?('ratings')
 		connection.drop_table 'probes' if connection.table_exists?('probes')
 		
-		connection.exec_query "create table ratings (movie SMALLINT, customer INTEGER, rating TINYINT, date date)"
-		connection.exec_query "create table probes (movie SMALLINT, customer INTEGER, rating TINYINT, date date)"
-
+		connection.exec_query "create table ratings (movie SMALLINT NOT NULL, customer INTEGER NOT NULL, rating TINYINT NOT NULL, date DATE NOT NULL)"
+		connection.exec_query "create table probes (movie SMALLINT NOT NULL, customer INTEGER NOT NULL, rating TINYINT NOT NULL, date DATE NOT NULL)"
+		
+		# connection.add_index(:ratings, :movie)
+		# connection.add_index(:ratings, :customer)
+		
+		# connection.add_index(:probes, :movie)
+		# connection.add_index(:probes, :customer)
+		
 		puts "loading probe list..."
 		probes = Set.new
 		File.open(prizeDatasetDir + '/probe.txt') do |f|
@@ -70,49 +78,72 @@ namespace :rpiflix do
 				end
 			end
 		end
-
+		
 		puts "parsing training set..."
-		# ActiveRecord::Base.transaction do
-			Dir.glob(prizeDatasetDir + "/training_set/mv*.txt").each_slice(500) do |mv_slice|
-				ActiveRecord::Base.transaction do
-					mv_slice.each do |mv|
-						puts mv
+		
+		insThread = nil;
+		
+		# iterate over all files, in chunks
+		Dir.glob(prizeDatasetDir + "/training_set/mv*.txt").each_slice(500) do |mv_slice|
+			ratingInserts = []
+			probeInserts = []
+			mv_slice.each do |mv|
+				puts mv
 
-						File.open(mv) do |f|
-							ratingInserts = []
-							probeInserts = []
-							movieID = f.gets.delete(":").strip
+				File.open(mv) do |f|
+					movieID = f.gets.delete(":").strip
 
-							while line = f.gets
-								split = line.strip.split(',',3)
-								if probes.include?(movieID + "_" + split[0])
-									probeInserts.push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
-								else
-									ratingInserts.push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
-								end
-							end
-
-							ratingInserts.each_slice(500) do |s|
-								stmt = "INSERT INTO ratings(movie, customer, rating, date) VALUES #{s.join(", ")}"
-								connection.exec_query stmt
-							end
-							
-							probeInserts.each_slice(500) do |s|
-								stmt = "INSERT INTO probes(movie, customer, rating, date) VALUES #{s.join(", ")}"
-								connection.exec_query stmt
-							end
-						end
+					while line = f.gets
+						split = line.strip.split(',',3)
+						(probes.include?(movieID + "_" + split[0]) ? probeInserts : ratingInserts).push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
 					end
 				end
 			end
-		# end
 
-		puts "creating indices..."
-		connection.exec_query "CREATE INDEX 'rating_movies' ON 'ratings' ('movie')"
-		connection.exec_query "CREATE INDEX 'rating_customers' ON 'ratings' ('customer')"
+			if not insThread.nil?
+				puts 'waiting for db...'
+				insThread.join
+			end
+			
+			insThread = Thread.new {
+				ActiveRecord::Base.connection_pool.with_connection do
+					ActiveRecord::Base.transaction do
+						ratingInserts.each_slice(500) do |s|
+							connection.exec_query "INSERT INTO ratings(movie, customer, rating, date) VALUES #{s.join(", ")}"
+						end
+						
+						probeInserts.each_slice(500) do |s|
+							connection.exec_query "INSERT INTO probes(movie, customer, rating, date) VALUES #{s.join(", ")}"
+						end
+					end
+				end
+			}
+		end
+
+		insThread.join unless insThread.nil?
 		
-		connection.exec_query "CREATE INDEX 'probe_movies' ON 'probes' ('movie')"
-		connection.exec_query "CREATE INDEX 'probe_customers' ON 'probes' ('customer')"	
+		puts 'creating indices...'
+		
+		threads = []
+		
+		[:probes, :ratings].each do |t|
+			[:movie, :customer].each do |c|
+				threads << Thread.new { 
+					ActiveRecord::Base.connection_pool.with_connection do
+						puts 'adding index on ' + t.to_s + '(' + c.to_s + ')'
+						connection.add_index(t, c)
+						puts 'done with index on ' + t.to_s + '(' + c.to_s + ')'
+					end
+				}
+			end
+		end
+		
+		threads.each { |t| t.join }
+		
+		puts 'populated ' + Probe.count.to_s + ' probes'
+		puts 'populated ' + Rating.count.to_s + ' ratings'
+		
+		connection.exec_query "SHUTDOWN"
 	end
 	
 	desc "TODO"
@@ -120,8 +151,9 @@ namespace :rpiflix do
 		ActiveRecord::Base.transaction do
 			Movie.all.each do |m|
 				puts m.id.to_s + ": " + m.title
-				m.ratingCount = Rating.where(movie: m.id).count
-				m.ratingAvg = m.ratingCount > 0 ? Rating.where(movie: m.id).average('rating') : 0.0
+				# puts m.attributes
+				m.rating_count = Rating.where(movie: m.id).count
+				m.rating_avg = m.rating_count > 0 ? Rating.where(movie: m.id).average('rating') : 0.0
 				m.save
 			end
 		end
