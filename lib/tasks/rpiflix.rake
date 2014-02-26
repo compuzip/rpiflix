@@ -55,8 +55,8 @@ namespace :rpiflix do
 		connection.drop_table 'ratings' if connection.table_exists?('ratings')
 		connection.drop_table 'probes' if connection.table_exists?('probes')
 		
-		connection.exec_query "create table ratings (movie int, customer int, rating int, date date)"
-		connection.exec_query "create table probes (movie int, customer int, rating int, date date)"
+		connection.exec_query "create table ratings (movie SMALLINT, customer INTEGER, rating TINYINT, date date)"
+		connection.exec_query "create table probes (movie SMALLINT, customer INTEGER, rating TINYINT, date date)"
 
 		puts "loading probe list..."
 		probes = Set.new
