@@ -1,7 +1,8 @@
 
 development:
-  adapter: jdbchsqldb
-  url: jdbc:hsqldb:file:db/hsqldb/hsql_development;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.log_data=true;hsqldb.cache_size=2000000;hsqldb.cache_rows=4000000;hsqldb.log_size=100
+  adapter: jdbcpostgresql
+  url: jdbc:postgresql://localhost:5432/rpiflix_dev
+  # url: jdbc:hsqldb:file:db/hsqldb/hsql_development;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.log_data=false;hsqldb.cache_size=2000000;hsqldb.cache_rows=4000000;hsqldb.log_size=100
   pool: 20
   timeout: 5000
 
@@ -10,13 +11,15 @@ development:
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
-  adapter: jdbchsqldb
-  url: jdbc:hsqldb:file:db/hsqldb/hsql_test;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.write_delay=false;hsqldb.log_data=true
+  adapter: jdbcpostgresql
+  url: jdbc:postgresql://localhost:5432/rpiflix_test
+  # url: jdbc:hsqldb:file:db/hsqldb/hsql_test;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.write_delay=false;hsqldb.log_data=true
   pool: 5
   timeout: 5000
 
 production:
-  adapter: jdbchsqldb
-  url: jdbc:hsqldb:file:db/hsqldb/hsql_production;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.write_delay=false;hsqldb.log_data=true
+  adapter: jdbcpostgresql
+  url: jdbc:postgresql://localhost:5432/rpiflix_prod
+  # url: jdbc:hsqldb:file:db/hsqldb/hsql_production;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.write_delay=false;hsqldb.log_data=true
   pool: 20
   timeout: 5000

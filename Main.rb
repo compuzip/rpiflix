@@ -8,6 +8,10 @@ ActiveRecord::Base.logger.level = Logger::INFO
 m = Model.where(klass: :Baseline).take
 m.handler.train
 
+# connection = ActiveRecord::Base.connection
+# connection.add_index(:probes, :customer)
+
+
 # require 'threadpool'
 
 # pool = ThreadPool.new(4)

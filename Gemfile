@@ -4,8 +4,10 @@ source 'https://rubygems.org'
 gem 'rails', '4.0.3'
 
 # Use sqlite3 as the database for Active Record
-gem 'activerecord-jdbcsqlite3-adapter',	:platforms => :jruby
-gem 'activerecord-jdbchsqldb-adapter',	:platforms => :jruby
+# gem 'activerecord-jdbcsqlite3-adapter',	:platforms => :jruby
+# gem 'activerecord-jdbchsqldb-adapter',	:platforms => :jruby
+# gem 'activerecord-jdbcmysql-adapter',	:platforms => :jruby
+gem 'activerecord-jdbcpostgresql-adapter',	:platforms => :jruby
 gem 'sqlite3', 							:platforms => :mri
 
 # Use SCSS for stylesheets

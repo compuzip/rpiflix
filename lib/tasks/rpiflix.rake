@@ -1,9 +1,10 @@
+require 'thread/pool'
+
 namespace :rpiflix do
 	desc "TODO"
 	task populateMovies: :environment do
 		prizeDatasetDir = "./db/nf_prize_dataset"
 		
-		ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[Rails.env])
 		connection = ActiveRecord::Base.connection
 
 		puts 'table exists?: ' + connection.table_exists?('movies').to_s
@@ -38,11 +39,9 @@ namespace :rpiflix do
 		ActiveRecord::Base.transaction do
 			inserts.each_slice(500) do |s|
 				stmt = "INSERT INTO movies(id, year, title) VALUES #{s.join(", ")}"
-				connection.exec_query stmt
+				connection.execute stmt
 			end
 		end
-		
-		# connection.exec_query "SHUTDOWN"
 	end
 
 	desc "TODO"
@@ -50,21 +49,19 @@ namespace :rpiflix do
 		prizeDatasetDir = "./db/nf_prize_dataset"
 		
 		# ActiveRecord::Base.logger = Logger.new(STDOUT)
+		ActiveRecord::Base.logger.level = Logger::INFO
 		
-		ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[Rails.env])
 		connection = ActiveRecord::Base.connection
 		
-		connection.drop_table 'ratings' if connection.table_exists?('ratings')
-		connection.drop_table 'probes' if connection.table_exists?('probes')
-		
-		connection.exec_query "create table ratings (movie SMALLINT NOT NULL, customer INTEGER NOT NULL, rating TINYINT NOT NULL, date DATE NOT NULL)"
-		connection.exec_query "create table probes (movie SMALLINT NOT NULL, customer INTEGER NOT NULL, rating TINYINT NOT NULL, date DATE NOT NULL)"
-		
-		# connection.add_index(:ratings, :movie)
-		# connection.add_index(:ratings, :customer)
-		
-		# connection.add_index(:probes, :movie)
-		# connection.add_index(:probes, :customer)
+		['ratings', 'probes'].each do |t|
+			connection.drop_table t if connection.table_exists?(t)
+			connection.execute "create table #{t} 
+				(movie SMALLINT NOT NULL, 
+				customer INTEGER NOT NULL, 
+				rating SMALLINT NOT NULL, 
+				date DATE NOT NULL
+				)"
+		end
 		
 		puts "loading probe list..."
 		probes = Set.new
@@ -74,17 +71,17 @@ namespace :rpiflix do
 					movie = line.strip.delete(':')
 				else
 					customer = line.strip
-					probes.add movie + "_" + customer
+					probes.add movie + '_' + customer
 				end
 			end
 		end
 		
 		puts "parsing training set..."
-		
-		insThread = nil;
+				
+		pool = Thread.pool(10)
 		
 		# iterate over all files, in chunks
-		Dir.glob(prizeDatasetDir + "/training_set/mv*.txt").each_slice(500) do |mv_slice|
+		Dir.glob(prizeDatasetDir + "/training_set/mv*.txt").each_slice(200) do |mv_slice|
 			ratingInserts = []
 			probeInserts = []
 			mv_slice.each do |mv|
@@ -95,55 +92,52 @@ namespace :rpiflix do
 
 					while line = f.gets
 						split = line.strip.split(',',3)
-						(probes.include?(movieID + "_" + split[0]) ? probeInserts : ratingInserts).push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
+						(probes.include?(movieID + '_' + split[0]) ? probeInserts : ratingInserts).push "(#{movieID}, #{split[0]}, #{split[1]}, '#{split[2]}')"
 					end
 				end
 			end
 
-			if not insThread.nil?
-				puts 'waiting for db...'
-				insThread.join
+			pool.process do			
+				ActiveRecord::Base.connection_pool.with_connection do |conn|
+					conn.transaction do
+						ratingInserts.each_slice(500) do |s|
+							conn.execute "INSERT INTO ratings(movie, customer, rating, date) VALUES #{s.join(", ")}"
+						end
+					end
+				end
 			end
 			
-			insThread = Thread.new {
-				ActiveRecord::Base.connection_pool.with_connection do
-					ActiveRecord::Base.transaction do
-						ratingInserts.each_slice(500) do |s|
-							connection.exec_query "INSERT INTO ratings(movie, customer, rating, date) VALUES #{s.join(", ")}"
-						end
-						
+			pool.process do
+				ActiveRecord::Base.connection_pool.with_connection do |conn|
+					conn.transaction do
 						probeInserts.each_slice(500) do |s|
-							connection.exec_query "INSERT INTO probes(movie, customer, rating, date) VALUES #{s.join(", ")}"
+							conn.execute "INSERT INTO probes(movie, customer, rating, date) VALUES #{s.join(", ")}"
 						end
 					end
 				end
-			}
+			end
 		end
 
-		insThread.join unless insThread.nil?
-		
-		puts 'creating indices...'
-		
-		threads = []
-		
+		puts 'waiting for db...'		
+		pool.wait_done
+
+		puts 'creating indices...'		
 		[:probes, :ratings].each do |t|
 			[:movie, :customer].each do |c|
-				threads << Thread.new { 
-					ActiveRecord::Base.connection_pool.with_connection do
+				pool.process do
+					ActiveRecord::Base.connection_pool.with_connection do |conn|
 						puts 'adding index on ' + t.to_s + '(' + c.to_s + ')'
-						connection.add_index(t, c)
+						conn.add_index(t, c)
 						puts 'done with index on ' + t.to_s + '(' + c.to_s + ')'
 					end
-				}
+				end
 			end
 		end
 		
-		threads.each { |t| t.join }
+		pool.shutdown
 		
 		puts 'populated ' + Probe.count.to_s + ' probes'
 		puts 'populated ' + Rating.count.to_s + ' ratings'
-		
-		connection.exec_query "SHUTDOWN"
 	end
 	
 	desc "TODO"
