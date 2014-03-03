@@ -23,9 +23,7 @@ install all other gems required by rpiflix
 * Configuration
 
 * Database creation
-create 'delayed_jobs' table
-	rake db:schema:load
-	
+
 
 extract netflix dataset, creating the following structure
 	./db/nf_prize_dataset/

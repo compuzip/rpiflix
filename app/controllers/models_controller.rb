@@ -1,18 +1,18 @@
 class ModelsController < ApplicationController
 	def index
-		@models = Model.all
+		@models = Model.order(:id)
 	end
 	
 	def train
 		model = Model.find(params[:id])
-		model.handler.delay.train
+		Thread.new { model.handler.train }
 		
 		redirect_to action: 'index', notice: ('training model ' + model.klass)
 	end
 	
 	def reset
-		model = Model.find(params[:id])
-		model.handler.delay.reset
+		model = Model.find(params[:id])		
+		Thread.new { model.handler.reset }
 		
 		redirect_to action: 'index', notice: ('resetting model ' + model.klass)
 	end
