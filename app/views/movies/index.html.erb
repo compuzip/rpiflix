@@ -1,31 +1,10 @@
 <h1>Movies#index</h1>
 
-<table border="1">
-  <tr>
-    <th>ID</th>
-	<th>release year</th>
-	<th>tmdbID</th>
-	<th>poster</th>	
-	<th>Rating</th>
-	<th>title</th>
-  </tr>
- 
-  <% @movies.each do |movie| %>
-    <tr>
-      <td><%= link_to movie.id, movie %></td>
-	  <td><%= movie.year %></td>
-      
-	  <td><%= movie.tmdbid %></td>
-	  
-	  <td>
-	  <% if movie.tmdbposter %>
-		<img src="<%= @tmdbconfig.base_url + 'w92' + movie.tmdbposter %>" />
-	  <% end %>
-	  </td>
-	  
-	  <td><%= "%2.2f" % movie.rating_avg  %>&nbsp;&nbsp;(<%= movie.rating_count %>)</td>
-	  
-	  <td><%= movie.title %></td>
-    </tr>
-  <% end %>
-</table>
+<%= datagrid_form_for @grid, :method => :get, :url => movies_path %>
+
+<%= paginate(@assets, :window => 10, :outer_window => 3) %>
+<%= datagrid_table @grid, @assets %>
+<%= paginate(@assets, :window => 10, :outer_window => 3) %>
+
+
+

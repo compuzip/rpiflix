@@ -1,4 +1,6 @@
 class Movie < ActiveRecord::Base
+	paginates_per 100
+
 	def populateTmdbData!
 		if not tmdbid
 			self.tmdbid = findTmdbID

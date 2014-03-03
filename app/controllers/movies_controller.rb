@@ -1,7 +1,7 @@
 class MoviesController < ApplicationController
 	def index
-		@movies = Movie.all
-		@tmdbconfig = Tmdb::Configuration.new
+		@grid = MoviesGrid.new(params[:movies_grid])		
+		@assets = @grid.assets.page params[:page]
 	end
   
 	def show

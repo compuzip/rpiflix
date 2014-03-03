@@ -53,3 +53,6 @@ gem 'delayed_job_active_record'
 gem 'daemons'
 
 gem 'thread'
+
+gem 'datagrid'
+gem 'kaminari'

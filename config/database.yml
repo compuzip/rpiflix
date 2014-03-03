@@ -2,7 +2,6 @@
 development:
   adapter: jdbcpostgresql
   url: jdbc:postgresql://localhost:5432/rpiflix_dev
-  # url: jdbc:hsqldb:file:db/hsqldb/hsql_development;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.log_data=false;hsqldb.cache_size=2000000;hsqldb.cache_rows=4000000;hsqldb.log_size=100
   pool: 20
   timeout: 5000
 
@@ -13,13 +12,11 @@ development:
 test:
   adapter: jdbcpostgresql
   url: jdbc:postgresql://localhost:5432/rpiflix_test
-  # url: jdbc:hsqldb:file:db/hsqldb/hsql_test;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.write_delay=false;hsqldb.log_data=true
   pool: 5
   timeout: 5000
 
 production:
   adapter: jdbcpostgresql
   url: jdbc:postgresql://localhost:5432/rpiflix_prod
-  # url: jdbc:hsqldb:file:db/hsqldb/hsql_production;check_props=true;shutdown=true;hsqldb.default_table_type=cached;hsqldb.write_delay=false;hsqldb.log_data=true
   pool: 20
   timeout: 5000
