@@ -7,11 +7,6 @@ module CF
 			@mutex = Mutex.new
 		end
 		
-		def enqueue(job)
-			Model.find(@modelID).update(state: :queued)
-			Model.find(@modelID).update(progress: 0)
-		end
-		
 		def train
 			Model.find(@modelID).update(state: :training)
 			Model.find(@modelID).update(progress: 0)
@@ -43,40 +38,29 @@ module CF
 		end
 		
 		def score
+			Model.find(@modelID).update(state: :scoring)
+			Model.find(@modelID).update(progress: 0)
+			
 			sse = 0.0
 			count = 0
 		
-			Probe.all.each do |r|
-				error = r.rating - rate(r.movie, r.customer, r.date)
-				sse += error * error
-				count += 1
+			Prediction.where(model: @modelID).delete_all
+		
+			Probe.connection.transaction do
+				Probe.all.each do |r|
+					prediction = rate(r.movie, r.customer, r.date)
+					error = r.rating - prediction
+					sse += error * error
+					count += 1
+					
+					Prediction.create(:model => @modelID, :customer => r.customer, :movie => r.movie, :prediction => prediction)
+				end
 			end
 		
+			Model.find(@modelID).update(state: :scored)
+			Model.find(@modelID).update(progress: 1)
+			
 			return Math.sqrt(sse / count)
 		end
-		
-		# def success(job)
-			# record_stat 'newsletter_job/success'
-		# end
-
-		# def error(job, exception)
-			# Airbrake.notify(exception)
-		# end
-
-		# def failure(job)
-			# page_sysadmin_in_the_middle_of_the_night
-		# end
-		
-		# def train
-			# Model.find(@modelID).update(state: :training)
-			# train_do
-			# Model.find(@modelID).update(state: :trained)
-		# end
-	
-		# def reset
-			# Model.find(@modelID).update(state: :resetting)
-			# reset_do
-			# Model.find(@modelID).update(state: :reset)
-		# end
 	end
 end

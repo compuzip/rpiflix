@@ -176,5 +176,18 @@ namespace :rpiflix do
 		end
 		
 		puts 'populated ' + Model.count.to_s + ' models'
+		
+		connection.drop_table 'predictions' if connection.table_exists?('predictions')
+		
+		connection.create_table('predictions') do |t|
+			t.integer	:model
+			t.integer	:movie
+			t.integer	:customer
+			t.float		:prediction
+		end
+		
+		connection.add_index('predictions', 'model')
+		connection.add_index('predictions', 'movie')
+		connection.add_index('predictions', 'customer')
 	end
 end

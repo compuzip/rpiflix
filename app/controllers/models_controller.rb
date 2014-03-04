@@ -19,7 +19,12 @@ class ModelsController < ApplicationController
 	
 	def score
 		model = Model.find(params[:id])
-		@score = CF::Oracle.score(model.handler)
-		puts @score
+		# @score = model.handler.score
+		# puts @score
+		
+		Thread.new { model.handler.score }
+		
+		redirect_to action: 'index', notice: ('scoring model ' + model.klass)
+		
 	end
 end
