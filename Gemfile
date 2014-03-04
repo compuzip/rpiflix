@@ -47,5 +47,9 @@ gem 'themoviedb'
 
 gem 'thread'
 
+# filter / sort / paging
 gem 'datagrid'
 gem 'kaminari'
+
+gem 'activerecord-import'
+

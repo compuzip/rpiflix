@@ -165,6 +165,7 @@ namespace :rpiflix do
 			t.string	:klass
 			t.string	:state, 	default: 'new'
 			t.float		:progress,	default: 0.0
+			t.float		:rmse,		default: 0.0
 			t.time		:updated_at
 		end
 		

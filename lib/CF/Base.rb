@@ -8,19 +8,15 @@ module CF
 		end
 		
 		def train
-			Model.find(@modelID).update(state: :training)
-			Model.find(@modelID).update(progress: 0)
+			Model.find(@modelID).update(state: :training, progress: 0)
 			train_do
-			Model.find(@modelID).update(state: :trained)
-			Model.find(@modelID).update(progress: 1)
+			Model.find(@modelID).update(state: :trained, progress: 1)
 		end
 		
 		def reset
-			Model.find(@modelID).update(state: :resetting)
-			Model.find(@modelID).update(progress: 0)
+			Model.find(@modelID).update(state: :resetting, progress: 0)
 			reset_do
-			Model.find(@modelID).update(state: :reset)
-			Model.find(@modelID).update(progress: 1)
+			Model.find(@modelID).update(state: :reset, progress: 1)
 		end
 
 		def progress(prog)
@@ -38,29 +34,40 @@ module CF
 		end
 		
 		def score
-			Model.find(@modelID).update(state: :scoring)
-			Model.find(@modelID).update(progress: 0)
+			Model.find(@modelID).update(state: :scoring, progress: 0)
 			
 			sse = 0.0
-			count = 0
-		
-			Prediction.where(model: @modelID).delete_all
-		
-			Probe.connection.transaction do
-				Probe.all.each do |r|
-					prediction = rate(r.movie, r.customer, r.date)
-					error = r.rating - prediction
-					sse += error * error
-					count += 1
-					
-					Prediction.create(:model => @modelID, :customer => r.customer, :movie => r.movie, :prediction => prediction)
-				end
-			end
-		
-			Model.find(@modelID).update(state: :scored)
-			Model.find(@modelID).update(progress: 1)
+			count = Probe.count
+			processed = 0
 			
-			return Math.sqrt(sse / count)
+			puts 'pruning table'
+			Prediction.where(model: @modelID).delete_all
+			
+			columns = [:model, :customer, :movie, :prediction]
+			
+			puts 'calculating predictions'
+			
+			Probe.all.each_slice(100000) do |slice|
+				values = []
+				
+				slice.each do |probe|
+					prediction = rate(probe.movie, probe.customer, probe.date)
+					error = probe.rating - prediction
+					sse += error * error
+				
+					values << [@modelID, probe.customer, probe.movie, prediction]
+				end
+			
+				puts 'saving predictions'
+				Prediction.import(columns, values, :validate => false)	
+				
+				processed += slice.size
+				progress(processed / (1.0 * count))
+			end
+			
+			rmse = Math.sqrt(sse / count)
+			
+			Model.find(@modelID).update(state: :scored, progress: 1, rmse: rmse)
 		end
 	end
 end

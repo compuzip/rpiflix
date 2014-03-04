@@ -20,6 +20,22 @@ module Rpiflix
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
 	
+	config.before_initialize do
+		# not sure where else to put this, but here seems to work
+	
+		require 'activerecord-import/base'
+		module ActiveRecord::Import
+			class << self
+				def base_adapter_with_jdbc_patch(adapter)
+					# drop jdbc from name, so ar-import picks the appropriate adapter
+					base_adapter_without_jdbc_patch adapter.sub('jdbc', '')
+				end
+				
+				alias_method_chain :base_adapter, :jdbc_patch
+			end
+		end
+    end
+	
 	config.autoload_paths += Dir["#{config.root}/lib"]
   end
 end

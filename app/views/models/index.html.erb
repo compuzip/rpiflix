@@ -9,10 +9,12 @@
     <th>name</th>
 	<th>state</th>
 	<th>progress</th>
+	<th>rmse</th>
 	<th>updated</th>
-	<th>train?</th>
-	<th>reset?</th>
-	<th>score...</th>
+	
+	<th>reset</th>
+	<th>train</th>
+	<th>score</th>
   </tr>
  
   <% @models.each do |model| %>
@@ -20,10 +22,12 @@
       <td><%= model.klass %></td>
 	  <td><%= model.state %></td>
 	  <td><%= '%3.3f' % (100.0 * model.progress) %>%</td>
+	  <td><%= '%1.5f' % model.rmse %></td>
 	  <td><%= model.updated_at %></td>
-	  <td><%= link_to "Train", train_model_path(model), method: :post %></td>
+	  
 	  <td><%= link_to "Reset", reset_model_path(model), method: :post %></td>
-	  <td><%= link_to "Score", score_model_path(model) %></td>
+	  <td><%= link_to "Train", train_model_path(model), method: :post %></td>
+	  <td><%= ["trained", "scored"].to_set.member?(model.state) ? (link_to "Score", score_model_path(model)) : "not trained" %></td>
     </tr>
   <% end %>
 </table>
