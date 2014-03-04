@@ -1,17 +1,7 @@
 <h1>Probes#index</h1>
 
-<table border="1">
-  <tr>
-    <th>customer</th>
-	<th>movie</th>
+<%= datagrid_form_for @grid, :method => :get, :url => probes_path %>
 
-  </tr>
- 
-  <% @probes.each do |probe| %>
-    <tr>     
-	  <td><%= probe.customer %></td>
-	  <td><%= probe.movie %></td>
-	  
-    </tr>
-  <% end %>
-</table>
+<%= paginate(@assets, :window => 10, :outer_window => 3) %>
+<%= datagrid_table @grid, @assets %>
+<%= paginate(@assets, :window => 10, :outer_window => 3) %>

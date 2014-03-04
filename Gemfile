@@ -3,12 +3,7 @@ source 'https://rubygems.org'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.0.3'
 
-# Use sqlite3 as the database for Active Record
-# gem 'activerecord-jdbcsqlite3-adapter',	:platforms => :jruby
-# gem 'activerecord-jdbchsqldb-adapter',	:platforms => :jruby
-# gem 'activerecord-jdbcmysql-adapter',	:platforms => :jruby
 gem 'activerecord-jdbcpostgresql-adapter',	:platforms => :jruby
-gem 'sqlite3', 							:platforms => :mri
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 4.0.0'

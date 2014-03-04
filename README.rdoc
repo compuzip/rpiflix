@@ -54,9 +54,6 @@ populate 'models' table
 
 * Services (job queues, cache servers, search engines, etc.)
 
-launch the delayed job worker
-	rake jobs:work
-
 * Deployment instructions
 
 * ...
