@@ -8,9 +8,9 @@ module CF
 		end
 		
 		def train
-				Model.find(@modelID).update(state: :training, progress: 0)
+				Model.find(@modelID).update(message: '', state: :training, progress: 0)
 				train_do
-				Model.find(@modelID).update(state: :trained, progress: 1)
+				Model.find(@modelID).update(message: '', state: :trained, progress: 1)
 			rescue Exception => e 
 				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
 				ActiveRecord::Base.logger.error msg
@@ -18,9 +18,9 @@ module CF
 		end
 		
 		def reset
-				Model.find(@modelID).update(state: :resetting, progress: 0)
+				Model.find(@modelID).update(message: '', state: :resetting, progress: 0)
 				reset_do
-				Model.find(@modelID).update(state: :reset, progress: 1)
+				Model.find(@modelID).update(message: '', state: :reset, progress: 1)
 			rescue Exception => e 
 				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
 				ActiveRecord::Base.logger.error msg
@@ -42,9 +42,9 @@ module CF
 		end
 		
 		def score
-				Model.find(@modelID).update(state: :scoring, progress: 0)
+				Model.find(@modelID).update(message: '', state: :scoring, progress: 0)
 				score_do
-				Model.find(@modelID).update(state: :scored, progress: 1)
+				Model.find(@modelID).update(message: '', state: :scored, progress: 1)
 			rescue Exception => e 
 				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
 				ActiveRecord::Base.logger.error msg

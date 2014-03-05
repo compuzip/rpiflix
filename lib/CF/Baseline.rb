@@ -64,13 +64,32 @@ module CF
 		end
 		
 		def rate(movie, customer, date)
-			# custAvg = Rating.where(customer: customer).average('rating')
-			# movieAvg = Rating.where(movie: movie).average('rating')
+			load_movie_cache if @movie_avg_cache.nil?
+			load_customer_cache if @customer_avg_cache.nil?
 			
-			custAvg = CustomerAvg.find(customer).avg
-			movieAvg = Movie.find(movie).ratingAvg
+			custAvg = @customer_avg_cache[customer]
+			movieAvg = @movie_avg_cache[movie]
 			
 			return (custAvg + movieAvg) / 2.0
 		end
+		
+		def load_customer_cache
+			max = CustomerAvg.maximum(:id)
+			@customer_avg_cache = Array.new(max + 1)
+			
+			CustomerAvg.all.each do |c|
+				@customer_avg_cache[c.id] = c.rating_avg
+			end
+		end
+		
+		def load_movie_cache
+			max = Movie.maximum(:id)
+			@movie_avg_cache = Array.new(max + 1)
+			
+			Movie.all.each do |m|
+				@movie_avg_cache[m.id] = m.rating_avg
+			end
+		end
+		
 	end
 end

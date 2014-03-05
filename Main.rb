@@ -6,7 +6,7 @@ ActiveRecord::Base.logger = Logger.new(STDOUT)
 # ActiveRecord::Base.logger.level = Logger::INFO
 	
 m = Model.where(klass: :Baseline).take
-m.handler.train
+m.handler.score
 
 # connection = ActiveRecord::Base.connection
 # connection.add_index(:probes, :customer)
