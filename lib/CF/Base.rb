@@ -8,15 +8,23 @@ module CF
 		end
 		
 		def train
-			Model.find(@modelID).update(state: :training, progress: 0)
-			train_do
-			Model.find(@modelID).update(state: :trained, progress: 1)
+				Model.find(@modelID).update(state: :training, progress: 0)
+				train_do
+				Model.find(@modelID).update(state: :trained, progress: 1)
+			rescue Exception => e 
+				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
+				ActiveRecord::Base.logger.error msg
+				Model.find(@modelID).update(state: msg, progress: 0)
 		end
 		
 		def reset
-			Model.find(@modelID).update(state: :resetting, progress: 0)
-			reset_do
-			Model.find(@modelID).update(state: :reset, progress: 1)
+				Model.find(@modelID).update(state: :resetting, progress: 0)
+				reset_do
+				Model.find(@modelID).update(state: :reset, progress: 1)
+			rescue Exception => e 
+				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
+				ActiveRecord::Base.logger.error msg
+				Model.find(@modelID).update(state: msg, progress: 0)
 		end
 
 		def progress(prog)
@@ -34,8 +42,16 @@ module CF
 		end
 		
 		def score
-			Model.find(@modelID).update(state: :scoring, progress: 0)
-			
+				Model.find(@modelID).update(state: :scoring, progress: 0)
+				score_do
+				Model.find(@modelID).update(state: :scored, progress: 1)
+			rescue Exception => e 
+				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
+				ActiveRecord::Base.logger.error msg
+				Model.find(@modelID).update(state: msg, progress: 0)
+		end
+		
+		def score_do
 			sse = 0.0
 			count = Probe.count
 			processed = 0
@@ -66,8 +82,8 @@ module CF
 			end
 			
 			rmse = Math.sqrt(sse / count)
-			
-			Model.find(@modelID).update(state: :scored, progress: 1, rmse: rmse)
+
+			Model.find(@modelID).update(rmse: rmse)
 		end
 	end
 end

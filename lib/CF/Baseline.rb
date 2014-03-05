@@ -14,11 +14,12 @@ module CF
 				t.integer	:rating_count
 			end
 			
-			puts 'running large group...'
-			res = Rating.group(:customer).pluck(:customer, 'COUNT(*)', 'SUM(rating)')
-			puts 'done'
+			# this seems to work well with postgres
+			# puts 'running large group...'
+			# res = Rating.group(:customer).pluck(:customer, 'COUNT(*)', 'SUM(rating)')
+			# puts 'done'
 			
-			customers = Rating.distinct.pluck(:customer)
+			customers = Rating.distinct.order(:customer).pluck(:customer)
 
 			custCount = customers.size
 			custMax = customers.max
@@ -28,22 +29,22 @@ module CF
 			
 			pool = Thread.pool(10)
 			
+			columns = [:id, :rating_count, :rating_avg]
+			
 			customers.each_slice(10000) do |task_slice|
 				pool.process do
 					ActiveRecord::Base.connection_pool.with_connection do |conn|
-						data = {}
+						values = []
+						min = task_slice.min
+						max = task_slice.max
 						# task_slice.each_slice(1000) do |db_slice|
-							r3 = Rating.where(customer: task_slice).group(:customer).pluck(:customer, 'COUNT(*)', 'SUM(rating)')
+							r3 = Rating.where(customer: min..max).group(:customer).pluck(:customer, 'COUNT(*)', 'SUM(rating)')
 							r3.each do |r|
-								data[r[0]] = [r[1], r[2] / (1.0 * r[1])]
+								values << [r[0], r[1], r[2] / (1.0 * r[1])]
 							end
 						# end
 					
-						conn.transaction do
-							data.each do |k, v|
-								CustomerAvg.create({ :id => k, :rating_count => v[0], :rating_avg => v[1]})
-							end	
-						end
+						CustomerAvg.import(columns, values, :validate => false)	
 					end
 					
 					puts task_slice[-1]
@@ -54,8 +55,6 @@ module CF
 			puts 'joining...'
 			pool.shutdown			
 			puts 'joined'
-			
-			puts CustomerAvg.count
 		end
 		
 		def reset_do
