@@ -164,6 +164,7 @@ namespace :rpiflix do
 		connection.create_table('models') do |t|
 			t.string	:klass
 			t.string	:state, 	default: 'new'
+			t.text		:message
 			t.float		:progress,	default: 0.0
 			t.float		:rmse,		default: 0.0
 			t.time		:updated_at

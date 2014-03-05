@@ -14,7 +14,7 @@ module CF
 			rescue Exception => e 
 				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
 				ActiveRecord::Base.logger.error msg
-				Model.find(@modelID).update(state: msg, progress: 0)
+				Model.find(@modelID).update(state: :error, message: msg, progress: 0)
 		end
 		
 		def reset
@@ -24,7 +24,7 @@ module CF
 			rescue Exception => e 
 				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
 				ActiveRecord::Base.logger.error msg
-				Model.find(@modelID).update(state: msg, progress: 0)
+				Model.find(@modelID).update(state: :error, message: msg, progress: 0)
 		end
 
 		def progress(prog)
@@ -48,7 +48,7 @@ module CF
 			rescue Exception => e 
 				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
 				ActiveRecord::Base.logger.error msg
-				Model.find(@modelID).update(state: msg, progress: 0)
+				Model.find(@modelID).update(state: :error, message: msg, progress: 0)
 		end
 		
 		def score_do

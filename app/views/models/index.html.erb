@@ -8,6 +8,7 @@
   <tr>
     <th>name</th>
 	<th>state</th>
+	<th>message</th>
 	<th>progress</th>
 	<th>rmse</th>
 	<th>updated</th>
@@ -21,6 +22,7 @@
     <tr>
       <td><%= model.klass %></td>
 	  <td><%= model.state %></td>
+	  <td><%= model.message %></td>
 	  <td><%= '%3.3f' % (100.0 * model.progress) %>%</td>
 	  <td><%= '%1.5f' % model.rmse %></td>
 	  <td><%= model.updated_at %></td>
