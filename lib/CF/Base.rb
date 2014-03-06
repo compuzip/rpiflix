@@ -10,7 +10,7 @@ module CF
 		def train
 				Model.find(@modelID).update(message: '', state: :training, progress: 0)
 				train_do
-				Model.find(@modelID).update(message: '', state: :trained, progress: 1)
+				Model.find(@modelID).update(message: '', state: :trained, progress: 1, rmse: 0)
 			rescue Exception => e 
 				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
 				ActiveRecord::Base.logger.error msg
@@ -20,7 +20,7 @@ module CF
 		def reset
 				Model.find(@modelID).update(message: '', state: :resetting, progress: 0)
 				reset_do
-				Model.find(@modelID).update(message: '', state: :reset, progress: 1)
+				Model.find(@modelID).update(message: '', state: :reset, progress: 1, rmse: 0)
 			rescue Exception => e 
 				msg = "error: #{e.class}: #{e.message} at #{e.backtrace.inspect}"
 				ActiveRecord::Base.logger.error msg

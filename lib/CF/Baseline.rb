@@ -1,25 +1,88 @@
 require 'thread/pool'
 
 module CF
+
+	# loosely based on GrandPrize2009_BPC_BellKor.pdf	
 	class Baseline < Base
-		class CustomerAvg < ActiveRecord::Base
+		class GlobalStats < ActiveRecord::Base
+			self.table_name_prefix = 'baseline_'
+		end
+		
+		class CustomerBias < ActiveRecord::Base
+			self.table_name_prefix = 'baseline_'
+		end
+		
+		class MovieBias < ActiveRecord::Base
 			self.table_name_prefix = 'baseline_'
 		end
 	
 		def train_do
 			reset_do
 			
-			CustomerAvg.connection.create_table(CustomerAvg.table_name) do |t|
-				t.float 	:rating_avg
-				t.integer	:rating_count
+			pool = Thread.pool(10)
+			
+			puts 'calculating global stats'
+			globalCount = Rating.count
+			globalSum = Rating.sum('rating')
+			globalMean = globalSum / globalCount.to_f
+			
+			GlobalStats.create(mean: globalMean, count: globalCount)
+			
+			
+			puts 'calculating movie bias'
+			# id, bias, count
+			movieStats = Array.new(Movie.count + 1)
+			
+			Movie.all.each do |m|
+				movieStats[m.id] = [m.id, m.rating_avg - globalMean, m.rating_count]
 			end
 			
-			# this seems to work well with postgres
-			# puts 'running large group...'
-			# res = Rating.group(:customer).pluck(:customer, 'COUNT(*)', 'SUM(rating)')
-			# puts 'done'
+			MovieBias.import( [:id, :bias, :rating_count], movieStats.last(movieStats.size - 1), :validate => false)
 			
+			puts 'calculating customer bias'
 			customers = Rating.distinct.order(:customer).pluck(:customer)
+			
+			customers.each_slice(10) do |task_slice|
+				# pool.process do
+					ActiveRecord::Base.connection_pool.with_connection do |conn|
+						# id, bias, count
+						values = []
+						
+						min = task_slice.min
+						max = task_slice.max
+						ratings = Rating.where(customer: min..max)
+						r2 = ratings.map do |r|
+							[r.customer, r.rating - globalMean - movieStats[r.movie][1]]
+						end
+						
+						puts r2
+						
+						r3 = r2.group_by { |r| r[0]}
+						r3.each do |r|
+							sum = r.map{|i| i[1]}.reduce(:+)
+							puts sum
+						end
+						
+						raise 'aaaa'
+						
+						# task_slice.each do |c|
+							bias = 0
+							
+							ratings.each do |r|
+								bias += r.rating - globalMean - movieStats[r.movie][1]
+							end
+							bias = bias / ratings.size.to_f
+							values << [c, bias, ratings.size]
+						# end
+						
+						CustomerBias.import( [:id, :bias, :rating_count], values, :validate => false)
+					end
+				# end
+			end
+			
+			raise 'pause'
+			
+			
 
 			custCount = customers.size
 			custMax = customers.max
@@ -27,7 +90,7 @@ module CF
 			puts 'custCount: ' + custCount.to_s
 			puts 'custMax: ' + custMax.to_s
 			
-			pool = Thread.pool(10)
+			
 			
 			columns = [:id, :rating_count, :rating_avg]
 			
@@ -58,9 +121,20 @@ module CF
 		end
 		
 		def reset_do
-			connection = CustomerAvg.connection
-			table = CustomerAvg.table_name
-			connection.drop_table table if connection.table_exists?(table)
+			GlobalStats.connection.create_table(GlobalStats.table_name, force: true) do |t|
+				t.float 	:mean
+				t.integer	:count
+			end
+			
+			MovieBias.connection.create_table(MovieBias.table_name, force: true) do |t|
+				t.float 	:bias
+				t.integer	:rating_count
+			end
+			
+			CustomerBias.connection.create_table(CustomerBias.table_name, force: true) do |t|
+				t.float 	:bias
+				t.integer	:rating_count
+			end
 		end
 		
 		def rate(movie, customer, date)
