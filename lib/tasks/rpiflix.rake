@@ -71,7 +71,7 @@ namespace :rpiflix do
 		
 		puts "parsing training set..."
 				
-		pool = Thread.pool(10)
+		pool = Thread.pool(Rails.configuration.max_threads)
 		
 		# iterate over all files, in chunks
 		Dir.glob(prizeDatasetDir + "/training_set/mv*.txt").each_slice(200) do |mv_slice|

@@ -19,7 +19,7 @@ module CF
 		def train_do
 			reset_do
 			
-			pool = Thread.pool(10)
+			pool = Thread.pool(Rails.configuration.max_threads)
 			
 			puts 'calculating global stats'
 			globalCount = Rating.count

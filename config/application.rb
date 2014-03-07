@@ -37,5 +37,8 @@ module Rpiflix
     end
 	
 	config.autoload_paths += Dir["#{config.root}/lib"]
+	
+	# max number of threads to use for training / scoring
+	config.max_threads = 2
   end
 end
