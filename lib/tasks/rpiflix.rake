@@ -6,15 +6,8 @@ namespace :rpiflix do
 		prizeDatasetDir = "./db/nf_prize_dataset"
 		
 		connection = ActiveRecord::Base.connection
-
-		puts 'table exists?: ' + connection.table_exists?('movies').to_s
-		if connection.table_exists?('movies')
-			puts 'old records: ' + Movie.count.to_s
-		end
 		
-		connection.drop_table 'movies' if connection.table_exists?('movies')	
-		
-		connection.create_table('movies') do |t|
+		connection.create_table('movies', force: true) do |t|
 			t.integer	:year
 			t.string	:title
 			t.integer	:tmdbid
@@ -159,15 +152,13 @@ namespace :rpiflix do
 		
 		connection = ActiveRecord::Base.connection
 		
-		connection.drop_table 'models' if connection.table_exists?('models')
-		
-		connection.create_table('models') do |t|
-			t.string	:klass
-			t.string	:state, 	default: 'new'
+		connection.create_table('models', force: true) do |t|
+			t.string	:klass,						null: false
+			t.string	:state, 	default: 'new',	null: false
 			t.text		:message
-			t.float		:progress,	default: 0.0
-			t.float		:rmse,		default: 0.0
-			t.time		:updated_at
+			t.float		:progress,	default: 0.0,	null: false
+			t.float		:rmse,		default: 0.0,	null: false
+			t.timestamps
 		end
 		
 		Dir[File.join(Rails.root, "/lib/CF/*.rb")].each do |f|
@@ -179,17 +170,11 @@ namespace :rpiflix do
 		
 		puts 'populated ' + Model.count.to_s + ' models'
 		
-		connection.drop_table 'predictions' if connection.table_exists?('predictions')
-		
-		connection.create_table('predictions') do |t|
-			t.integer	:model
-			t.integer	:movie
-			t.integer	:customer
-			t.float		:prediction
+		connection.create_table('predictions', id: false, force: true) do |t|
+			t.column :model, :smallint, null: false,	index: true
+			t.column :movie, :smallint, null: false, 	index: true
+			t.integer	:customer,		null: false,	index: true
+			t.float		:prediction,	null: false
 		end
-		
-		connection.add_index('predictions', 'model')
-		connection.add_index('predictions', 'movie')
-		connection.add_index('predictions', 'customer')
 	end
 end
