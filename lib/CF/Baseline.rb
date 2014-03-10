@@ -100,7 +100,7 @@ module CF
 			
 			pred = @cache_global_mean + @cache_customer[customer] + @cache_movie[movie]
 			
-			return pred
+			[[pred, 5].min, 1].max
 		end
 		
 	private

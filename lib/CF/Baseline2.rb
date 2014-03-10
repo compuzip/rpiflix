@@ -140,8 +140,6 @@ module CF
 			end
 			
 			CustomerBias.import( [:id, :bias, :rating_count], values, :validate => false)
-			
-			
 		end
 		
 		def rate(movie, customer, date)
@@ -149,7 +147,7 @@ module CF
 			
 			pred = @cache_global_mean + @cache_customer[customer] + @cache_movie[movie]
 			
-			return pred
+			[[pred, 5].min, 1].max
 		end
 		
 	private
