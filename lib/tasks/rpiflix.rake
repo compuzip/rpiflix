@@ -171,10 +171,14 @@ namespace :rpiflix do
 		puts 'populated ' + Model.count.to_s + ' models'
 		
 		connection.create_table('predictions', id: false, force: true) do |t|
-			t.column :model, :smallint, null: false,	index: true
-			t.column :movie, :smallint, null: false, 	index: true
-			t.integer	:customer,		null: false,	index: true
+			t.column :model, :smallint, null: false
+			t.column :movie, :smallint, null: false
+			t.integer	:customer,		null: false
 			t.float		:prediction,	null: false
 		end
+		
+		connection.add_index 'predictions', :model
+		connection.add_index 'predictions', :movie
+		connection.add_index 'predictions', :customer
 	end
 end
