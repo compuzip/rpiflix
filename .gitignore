@@ -25,4 +25,6 @@
 /.project
 /Gemfile.lock
 
+# Ignore temporary files made by text editors
 *~
+*.swp

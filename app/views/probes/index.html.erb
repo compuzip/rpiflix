@@ -1,7 +1,7 @@
-<h1>Probes#index</h1>
-
+<div class="CSSTableGenerator CSSTableGeneratorPadded">
 <%= datagrid_form_for @grid, :method => :get, :url => probes_path %>
 
 <%= paginate(@assets, :window => 10, :outer_window => 3) %>
 <%= datagrid_table @grid, @assets %>
 <%= paginate(@assets, :window => 10, :outer_window => 3) %>
+</div>
