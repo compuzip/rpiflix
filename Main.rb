@@ -1,4 +1,5 @@
 require 'pp'
+require 'rubyvis'
 
 require_relative 'Tree'
 require_relative 'Record'
@@ -25,66 +26,103 @@ def GINI(records)
 	1.0 - sum
 end
 
+def split_set(records, train_perc)
+	train = []
+	test = []
+	rng = Random.new(3211)
+	
+	records.each do |r|
+		if rng.rand < train_perc
+			train << r
+		else
+			test << r
+		end
+	end
+	
+	return [train, test]
+end
 
 
-out_map = {'2' => 1, '4' => -1}
+
+def scatter(records, xidx, yidx)
+	# data = pv.range(100).map {|x| 
+	  # OpenStruct.new({x: x, y: rand(), z: 10**(2*rand)})
+	# }
+
+	w = 400
+	h = 400
+
+	x = pv.Scale.linear(0, 10).range(0, w)
+	y = pv.Scale.linear(0, 10).range(0, h)
+
+	c = pv.Scale.log(1, 100).range("orange", "brown")
+
+	# The root panel.
+	vis = pv.Panel.new()
+		.width(w)
+		.height(h)
+		.bottom(20)
+		.left(20)
+		.right(10)
+		.top(5);
+
+	# Y-axis and ticks. 
+	vis.add(pv.Rule)
+		.data(y.ticks())
+		.bottom(y)
+		.strokeStyle(lambda {|d| d!=0 ? "#eee" : "#000"})
+		.anchor("left").add(pv.Label)
+			.text(y.tick_format)
+		
+		# .visible(lambda {|d|  d > 0 and d < 1})
+
+	# X-axis and ticks. 
+	vis.add(pv.Rule)
+		.data(x.ticks())
+		.left(x)
+		.stroke_style(lambda {|d| d!=0 ? "#eee" : "#000"})
+		.anchor("bottom").add(pv.Label)
+			.text(x.tick_format);
+		
+		# .visible(lambda {|d|  d > 0 and d < 100})
+
+	# data = records.map do |r|
+		# OpenStruct.new({x: r.attributes[xidx], y: r.attributes[yidx], z: (r.klass + 2)})
+	# end
+	
+	#/* The dot plot! */
+	vis.add(pv.Panel)
+		.data(records)
+		.add(pv.Dot)
+		.left(lambda {|r| x.scale(r.attributes[xidx])})
+		.bottom(lambda {|r| y.scale(r.attributes[yidx])})
+		.shape_size(lambda {|r| r.klass + 2})
+		.stroke_style(lambda {|r| c.scale(r.klass + 2)})
+		.fill_style(lambda {|r| c.scale(r.klass + 2)})
+
+		# .title(lambda {|d| "%0.1f" % d.z})
+		
+		# .stroke_style(lambda {|d| c.scale(d.z)})
+		# .fill_style(lambda {|d| c.scale(d.z).alpha(0.2)})
+		
+	vis.render()
+	
+	File.open('scatter.svg', 'w') do |f|
+		f.puts vis.to_svg
+	end
+end
 
 data_file = 'breast-cancer-wisconsin.data'
 train_perc = 0.5
 
-train = []
-test = []
+records = Record.read(data_file)
+train, test = split_set(records, train_perc)
 
-File.open(data_file) do |f|
-	records = Hash.new
-	seq = (1..100).each
-	rng = Random.new(3211)
-
-	while line = f.gets
-		if line.include? ',?,'
-			puts 'skipping: ' + line
-		else
-			split = line.strip.split(',')
-			
-			r = Record.new(split[0], 
-				split[1,split.size - 2].map{|x| x.to_i}, 
-				out_map[split[-1]])
-			
-			if records.key?(r.id)
-				# puts 'duplicate record id: ' + r.id.to_s
-				r.id = r.id + '_' + seq.next.to_s
-			end
-			
-			records[r.id] = r
-			
-			# pp r
-			
-			if rng.rand < train_perc
-				train << r
-			else
-				test << r
-			end
-		end
-	end
-end
+scatter(train, 5, 1)
 
 puts train.size
 puts test.size
 
-
-c1 = Record.new('1', [], 'c1')
-c2 = Record.new('1', [], 'c2')
-
-# puts GINI([] << c2 << c2 << c2 << c2)
-# puts GINI([] << c1 << c2 << c2 << c2 << c2 << c2)
-# puts GINI([] << c1 << c1 << c2 << c2 << c2 << c2)
-# puts GINI([] << c1 << c1 << c1 << c2 << c2 << c2)
-
-# puts Entropy([] << c2 << c2 << c2 << c2)
-# puts Entropy([] << c1 << c2 << c2 << c2 << c2 << c2)
-# puts Entropy([] << c1 << c1 << c2 << c2 << c2 << c2)
-
-# puts '============================'
 
 puts 'GINI train: ' + GINI(train).to_s
 puts 'GINI test: ' + GINI(test).to_s
