@@ -30,7 +30,7 @@ end
 out_map = {'2' => 1, '4' => -1}
 
 data_file = 'breast-cancer-wisconsin.data'
-train_perc = 0.75
+train_perc = 0.5
 
 train = []
 test = []
@@ -95,39 +95,17 @@ puts 'Entropy test: ' + Entropy(test).to_s
 
 # puts records.size	683
 
-puts 'parent: ' + GINI(train).to_s
-
-# puts '0: ' + try_split(train, 0).to_s
-# puts '1: ' + try_split(train, 1).to_s
-# puts '2: ' + try_split(train, 2).to_s
-# puts '3: ' + try_split(train, 3).to_s
-# puts '4: ' + try_split(train, 4).to_s
-# puts '5: ' + try_split(train, 5).to_s
-# puts '6: ' + try_split(train, 6).to_s
-# puts '7: ' + try_split(train, 7).to_s
-# puts '8: ' + try_split(train, 8).to_s
-
 tree = Tree.build(train, 0..8)
 
-Tree.dump(tree)
+g =  GraphViz.new( :G, :type => :digraph )
+Tree.dump_node(tree, g)
+g.output( :png => "tree.png" )
 
 # pp tree
 
-correct = 0
+puts 'testing....'
 
-test.each do |t|
-	pp t
-	
-	pred = tree.decide(t)
-	
-	
-	if t.klass == pred
-		correct += 1
-	else
-		puts 'expected: ' + t.klass.to_s + ', got: ' + pred.to_s
-	end
-end
 
-accuracy = correct / test.size.to_f
-
+err = Tree.error(tree, test)
+accuracy = (test.size - err) / test.size.to_f
 puts 'accuracy: ' + accuracy.to_s
