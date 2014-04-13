@@ -8,16 +8,15 @@ require "java"
 require "lib/jcommon-1.0.22.jar"
 require "lib/jfreechart-1.0.17.jar"
 
-include_class "org.jfree.data.general.DefaultPieDataset"
-include_class "org.jfree.chart.ChartPanel"
-include_class "org.jfree.chart.plot.PlotOrientation"
-include_class "org.jfree.chart.ChartFactory"
-include_class "org.jfree.data.xy.XYSeries"
-include_class "org.jfree.data.xy.XYSeriesCollection"
+# include_class "org.jfree.chart.ChartPanel"
+# include_class "org.jfree.chart.plot.PlotOrientation"
+# include_class "org.jfree.chart.ChartFactory"
+# include_class "org.jfree.data.xy.XYSeries"
+# include_class "org.jfree.data.xy.XYSeriesCollection"
 
 # -- Code to build the Swing Frame
-include_class "javax.swing.JFrame"
-include_class "java.awt.BorderLayout"
+# include_class "javax.swing.JFrame"
+# include_class "java.awt.BorderLayout"
 
 
 def Entropy(records)
@@ -48,87 +47,40 @@ def split_set(records, train_perc)
 	rng = Random.new(3211)
 	
 	records.each do |r|
-		if rng.rand < train_perc
-			train << r
-		else
-			test << r
-		end
+		(rng.rand < train_perc ? train : test) << r
 	end
 	
 	return [train, test]
 end
 
 def create_chart(records, xidx, yidx)
-  # dataset = DefaultPieDataset.new
-  # dataset.set_value("Comet Nuclei", 1.26)
-  # dataset.set_value("Mars Asteroids", 7.0)
-  # dataset.set_value("Apollo Objects", 0.55)
-
-  # chart = ChartFactory.create_pie_chart(
-    # "Impact Craters greater than 20km radius per million square kilometers on Mars",
-    # dataset,
-    # true,
-    # true,
-    # false
-  # )
-	
-	series_collection = XYSeriesCollection.new
+  
+	series_collection = org.jfree.data.xy.XYSeriesCollection.new
     
 	records.group_by{|r| r.klass}.each do |k,v|
-		series = XYSeries.new(k.to_s);
+		series = org.jfree.data.xy.XYSeries.new(k.to_s);
 		v.each do |r|
 			series.add(r.attributes[xidx], r.attributes[yidx])
 		end
 		
 		series_collection.addSeries(series)
 	end
-	
-	# series = XYSeries.new("Random");
-	# records.each do |r|
-		# series.add(rand, 2*rand)
-	# end
-	
-	# series2 = XYSeries.new("TWO");
-	# records.each do |r|
-		# series2.add(rand, 2*rand)
-	# end
-	
-    # for (int i = 0; i <= 100; i++) {
-        # double x = r.nextDouble();
-        # double y = r.nextDouble();
-        # series.add(x, y);
-    # }
-    # series_collection.addSeries(series)
-	# series_collection.addSeries(series2)
   
-        xAxis = org.jfree.chart.axis.NumberAxis.new(xidx.to_s)
-        # xAxis.setAutoRangeIncludesZero(false);
-        yAxis = org.jfree.chart.axis.NumberAxis.new(yidx.to_s)
-        # yAxis.setAutoRangeIncludesZero(false);
+	xAxis = org.jfree.chart.axis.NumberAxis.new(xidx.to_s)
+	# xAxis.setAutoRangeIncludesZero(false);
+	yAxis = org.jfree.chart.axis.NumberAxis.new(yidx.to_s)
+	# yAxis.setAutoRangeIncludesZero(false);
 
-        plot = org.jfree.chart.plot.XYPlot.new(series_collection, xAxis, yAxis, nil)
+	plot = org.jfree.chart.plot.XYPlot.new(series_collection, xAxis, yAxis, nil)
 
-        # XYToolTipGenerator toolTipGenerator = null;
-        # if (tooltips) {
-            # toolTipGenerator = new StandardXYToolTipGenerator();
-        # }
+	renderer = org.jfree.chart.renderer.xy.XYLineAndShapeRenderer.new(false, true)
+	# renderer.setBaseToolTipGenerator(toolTipGenerator);
+	# renderer.setURLGenerator(urlGenerator);
+	plot.setRenderer(renderer)
+	plot.setOrientation(org.jfree.chart.plot.PlotOrientation::VERTICAL)
 
-        # XYURLGenerator urlGenerator = null;
-        # if (urls) {
-            # urlGenerator = new StandardXYURLGenerator();
-        # }
-        renderer = org.jfree.chart.renderer.xy.XYLineAndShapeRenderer.new(false, true)
-        # renderer.setBaseToolTipGenerator(toolTipGenerator);
-        # renderer.setURLGenerator(urlGenerator);
-        plot.setRenderer(renderer)
-        plot.setOrientation(PlotOrientation::VERTICAL)
-
-        chart3 = org.jfree.chart.JFreeChart.new("Scatter Plot", org.jfree.chart.JFreeChart::DEFAULT_TITLE_FONT, plot, true);
-        # currentTheme.apply(chart)
-        # return chart
-
-
-  
+	chart3 = org.jfree.chart.JFreeChart.new("#{xidx} vs. #{yidx}", org.jfree.chart.JFreeChart::DEFAULT_TITLE_FONT, plot, true);
+	# currentTheme.apply(chart) 
   
   # chart2 = ChartFactory.createScatterPlot(
             # "Scatter Plot",
@@ -140,122 +92,79 @@ def create_chart(records, xidx, yidx)
             # true,
             # false
 	# )
-
-  ChartPanel.new chart3
 end
 
 
 def create_frame chart
-  frame = JFrame.new("jRuby using JFreeChart")
-  frame.content_pane.add(chart, BorderLayout::CENTER)
+  frame = javax.swing.JFrame.new("jRuby using JFreeChart")
+  frame.content_pane.add(org.jfree.chart.ChartPanel.new(chart), java.awt.BorderLayout::CENTER)
   frame.setSize(600, 400)
   frame.visible = true
-  frame.default_close_operation = JFrame::EXIT_ON_CLOSE
+  frame.default_close_operation = javax.swing.JFrame::EXIT_ON_CLOSE
 end
 
-
-def scatter(records, xidx, yidx)
-	# data = pv.range(100).map {|x| 
-	  # OpenStruct.new({x: x, y: rand(), z: 10**(2*rand)})
-	# }
-
-	w = 400
-	h = 400
-
-	x = pv.Scale.linear(0, 10).range(0, w)
-	y = pv.Scale.linear(0, 10).range(0, h)
-
-	c = pv.Scale.log(1, 100).range("orange", "brown")
-
-	vis = Rubyvis::Panel.new do 
-		width(w)
-		height(h)
-		bottom(20)
-		left(20)
-		right(10)
-		top(5)
-	end
-	
-	# The root panel.
-	# vis = pv.Panel.new()
-		# .width(w)
-		# .height(h)
-		# .bottom(20)
-		# .left(20)
-		# .right(10)
-		# .top(5);
-		
-	# Y-axis and ticks. 
-	vis.add Rubyvis::Rule do
-		data y.ticks
-		bottom y
-		stroke_style {|d| d!=0 ? "#eee" : "#000"}
-		# strokeStyle(lambda {|d| d!=0 ? "#eee" : "#000"})
-		# anchor('left').label do
-			# text(y.tick_format)
-		# end
-	end
-	
-	# vis.add(pv.Rule)
-		# .data(y.ticks)
-		# .bottom(y)
-		# .strokeStyle(lambda {|d| d!=0 ? "#eee" : "#000"})
-		# .anchor("left").add(pv.Label)
-			# .text(y.tick_format)
-		
-		# .visible(lambda {|d|  d > 0 and d < 1})
-
-	# X-axis and ticks. 
-	vis.add(pv.Rule)
-		.data(x.ticks())
-		.left(x)
-		.stroke_style(lambda {|d| d!=0 ? "#eee" : "#000"})
-		.anchor("bottom").add(pv.Label)
-			.text(x.tick_format);
-		
-		# .visible(lambda {|d|  d > 0 and d < 100})
-
-	# data = records.map do |r|
-		# OpenStruct.new({x: r.attributes[xidx], y: r.attributes[yidx], z: (r.klass + 2)})
-	# end
-	
-	#/* The dot plot! */
-	vis.add(pv.Panel)
-		.data(records)
-		.add(pv.Dot)
-		.left(lambda {|r| x.scale(r.attributes[xidx])})
-		.bottom(lambda {|r| y.scale(r.attributes[yidx])})
-		.shape_size(lambda {|r| r.klass + 2})
-		.stroke_style(lambda {|r| c.scale(r.klass + 2)})
-		.fill_style(lambda {|r| c.scale(r.klass + 2)})
-
-		# .title(lambda {|d| "%0.1f" % d.z})
-		
-		# .stroke_style(lambda {|d| c.scale(d.z)})
-		# .fill_style(lambda {|d| c.scale(d.z).alpha(0.2)})
-		
-	vis.render()
-	
-	File.open('scatter.svg', 'w') do |f|
-		f.puts vis.to_svg
-	end
+def save_chart(name, chart)
+	org.jfree.chart.ChartUtilities.saveChartAsPNG(java.io.File.new(name), chart, 600, 400)
 end
 
-
-
+def filter(records, xidx, yidx, vals, idx = 0)
+	if idx == vals.size
+		name = vals.join('_')
+		puts vals.to_s + ': ' + name + ': ' + records.size.to_s
+		
+		save_chart('plots/test_' + name + '_' + records.size.to_s + '.png', create_chart(records, xidx, yidx))
+	else
+		if idx == xidx or idx == yidx
+			filter(records, xidx, yidx, vals, idx + 1)
+		else	
+			records.map{|r| r.attributes[idx]}.uniq.each do |a|
+				vals[idx] = a
+				
+				rec = records.select{|r| r.attributes[idx] == a}
+				uniq = rec.uniq{|r| r.klass}
+				
+				if rec.size > 1 and uniq.size > 1
+					filter(rec, xidx, yidx, vals, idx + 1)
+				end
+			end
+		end
+	end
+end
 
 data_file = 'breast-cancer-wisconsin.data'
 train_perc = 0.5
 
-records = Record.read(data_file)
+# records = Record.read(data_file)
+
+records = Record.data_p265
+
+# records = records.map{|r| Record.new(r.id, r.attributes.first(5), r.klass)}
+
+
 train, test = split_set(records, train_perc)
 
-# scatter(train, 5, 1)
+# save_chart("test123.png", create_chart(train, 5, 1))
 
-create_frame create_chart(train, 5, 1)
+attrs = train[0].attributes.size
 
-puts train.size
-puts test.size
+Range.new(0, attrs - 2).each do |x|
+	Range.new(x + 1, attrs - 1).each do |y|
+		puts '==== ' + x.to_s + 'v' + y.to_s
+
+		vals = Array.new(attrs)
+		vals[x] = 'x'
+		vals[y] = 'y'
+		filter(records, x, y, vals)
+	end
+end
+
+aaaaaaaaaaaaa
+
+
+# puts attrs
+
+# puts train.size
+# puts test.size
 
 
 puts 'GINI train: ' + GINI(train).to_s
@@ -265,13 +174,11 @@ puts 'Entropy train: ' + Entropy(train).to_s
 puts 'Entropy test: ' + Entropy(test).to_s
 
 
-# puts records.size	683
+tree = Tree.build(train, 0..(attrs - 1))
 
-tree = Tree.build(train, 0..8)
-
-g =  GraphViz.new( :G, :type => :digraph )
-Tree.dump_node(tree, g)
-g.output( :png => "tree.png" )
+# g =  GraphViz.new( :G, :type => :digraph )
+# Tree.dump_node(tree, g)
+# g.output( :png => "tree.png" )
 
 # pp tree
 
