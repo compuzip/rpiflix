@@ -72,7 +72,7 @@ class Tree
 		puts error(root, training)
 	end
 	
-	def self.dump_node(node, g, seq = (1..10000).each)
+	def self.dump_node(node, g, seq = (1..1000).each)
 		if node.is_a? Leaf
 			ret = g.add_nodes('id' + seq.next.to_s, {:label => "#{node.klass} (#{node.majority}/#{node.total})"})
 		else
