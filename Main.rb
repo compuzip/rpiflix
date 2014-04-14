@@ -1,14 +1,10 @@
-require 'pp'
-require 'rubyvis'
-require 'matrix'
-
 require_relative 'Record'
 
 require_relative 'Tree'
 require_relative 'SVM'
 
 require_relative 'Plot'
-
+require_relative 'Tester'
 
 
 def Entropy(records)
@@ -45,8 +41,6 @@ def split_set(records, train_perc)
 	return [train, test]
 end
 
-
-
 def filter(records, xidx, yidx, svm, vals, idx = 0)
 	if idx == vals.size
 		name = vals.join('_')
@@ -73,19 +67,17 @@ def filter(records, xidx, yidx, svm, vals, idx = 0)
 	end
 end
 
+# st = SVM.new(Record.data_p265)
 
+# puts 'w: ' + st.wVec.to_s
+# puts 'b: ' + st.b.to_s
 
+# aaaaaaaaaaaaaaaaaaaaaa
 
 data_file = 'breast-cancer-wisconsin.data'
-train_perc = 0.3
+train_perc = 0.5
 
-# records = Record.read(data_file)
-
-records = Record.data_p265
-st = SVM.new(Record.data_p265)
-
-puts 'w: ' + st.wVec.to_s
-puts 'b: ' + st.b.to_s
+records = Record.read(data_file)
 
 
 # records = records.map{|r| Record.new(r.id, r.attributes.first(5), r.klass)}
@@ -109,22 +101,24 @@ puts 'b: ' + st.b.to_s
 
 train, test = split_set(records, train_perc)
 
-st = SVM.new(records)
+# train = records.first(15)
+
+st = SVM.new(train)
 
 attrs = records.first.attributes.size
 
-Range.new(0, attrs - 2).each do |x|
-	Range.new(x + 1, attrs - 1).each do |y|
-		puts '==== ' + x.to_s + 'v' + y.to_s
+# Range.new(0, attrs - 2).each do |x|
+	# Range.new(x + 1, attrs - 1).each do |y|
+		# puts '==== ' + x.to_s + 'v' + y.to_s
 
-		vals = Array.new(attrs)
-		vals[x] = 'x'
-		vals[y] = 'y'
-		filter(records, x, y, st, vals)
-	end
-end
+		# vals = Array.new(attrs)
+		# vals[x] = 'x'
+		# vals[y] = 'y'
+		# filter(records, x, y, st, vals)
+	# end
+# end
 
-aaaaaaaaaaaaa
+# aaaaaaaaaaaaa
 
 
 
@@ -152,6 +146,10 @@ tree = Tree.build(train, 0..(attrs - 1))
 puts 'testing....'
 
 
-err = Tree.error(tree, test)
-accuracy = (test.size - err) / test.size.to_f
-puts 'accuracy: ' + accuracy.to_s
+err_tree = Tester.new(tree).error(test)
+accuracy_tree = (test.size - err_tree) / test.size.to_f
+puts 'accuracy_tree: ' + accuracy_tree.to_s
+
+err_svm = Tester.new(st).error(test)
+accuracy_svm = (test.size - err_svm) / test.size.to_f
+puts 'accuracy_svm: ' + accuracy_svm.to_s

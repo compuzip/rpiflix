@@ -6,17 +6,17 @@ class Tree
 		attr_accessor :map
 		attr_accessor :total
 	
-		def decide(record)
+		def classify(record)
 			a = record.attributes[attr_idx]
 			
 			if map.key?(a)
-				map[a].decide(record)
+				map[a].classify(record)
 			else
 				# untrained combination
 				# use existing entries, weighted by distance
 				res = Hash.new(0)
 				map.each do |k,v|
-					d = v.decide(record)
+					d = v.classify(record)
 					res[d] += 1.0 / (a - k).abs ** 2 * v.total
 				end
 				
@@ -44,7 +44,7 @@ class Tree
 			@total = total
 		end
 		
-		def decide(record)
+		def classify(record)
 			klass
 		end
 		
@@ -53,24 +53,11 @@ class Tree
 		end
 	end
 
-	def self.error(root, records)
-		err = 0
-		records.each do |t|
-			pred = root.decide(t)
-			
-			if t.klass != pred
-				err += 1
-				pp t
-				puts 'expected: ' + t.klass.to_s + ', got: ' + pred.to_s
-			end
-		end
-		
-		err
-	end
+
 	
-	def self.prune(root, training)
-		puts error(root, training)
-	end
+	# def self.prune(root, training)
+		# puts error(root, training)
+	# end
 	
 	def self.dump_node(node, g, seq = (1..1000).each)
 		if node.is_a? Leaf
