@@ -49,6 +49,7 @@ class SVM
 	end
 	
 	def boundary(xidx, yidx, xs)
+		# only works with linear kernel
 		xs.map do |x|
 			(-@wVec[xidx] * x - @b) / @wVec[yidx]
 		end
@@ -189,22 +190,22 @@ class SVM
 		# Objective function
 		yMat = Matrix.diagonal(*@yVec)
 		
-		puts 'pMat2'
+		# puts 'pMat2'
 		pMat2 = Matrix.build(attMat.row_size, attMat.row_size) do |row, col|
 			@kernel.call(attMat.row(row), attMat.row(col)) * yVec[row] * yVec[col]
 		end
 				
-		puts 'qVec'
+		# puts 'qVec'
 		qVec = Array.new(@attMat.row_size, -1.0)
 		
-		puts 'creating objectiveFunction'
+		# puts 'creating objectiveFunction'
 		objectiveFunction = com.joptimizer.functions.QuadraticMultivariateRealFunction.new(pMat2.to_a.to_java([].to_java(Java::double).class), qVec, 0)
 
 		# equalities	
 		aMat2 = Matrix[@yVec]
 		bVec2 = [0.0]
 		
-		puts 'building inequalities'
+		# puts 'building inequalities'
 		inequalities = Array.new(@attMat.row_size) do |i|
 			g = Array.new(@attMat.row_size, 0.0)
 			g[i] = -1.0
@@ -223,7 +224,7 @@ class SVM
 		ip_map = {1 => yVec.size / @yVec.count(1).to_f, -1 => yVec.size / @yVec.count(-1).to_f}
 		ip = @yVec.map{|e| ip_map[e]}
 		
-		puts 'ip: ' + ip.to_s
+		# puts 'ip: ' + ip.to_s
 		
 		# optimization problem
 		oR = com.joptimizer.optimizers.OptimizationRequest.new
@@ -250,7 +251,7 @@ class SVM
 		
 		sol = sol.map{|e| e.abs < 1e-6 ? 0 : e}
 		
-		puts 'sol: ' + sol.to_s
+		# puts 'sol: ' + sol.to_s
 		
 		return sol
 	end

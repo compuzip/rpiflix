@@ -68,11 +68,9 @@ def filter(records, xidx, yidx, svm, vals, idx = 0)
 end
 
 # st = SVM.new(Record.data_p265)
-
 # puts 'w: ' + st.wVec.to_s
 # puts 'b: ' + st.b.to_s
 
-# aaaaaaaaaaaaaaaaaaaaaa
 
 data_file = 'breast-cancer-wisconsin.data'
 train_perc = 0.5
@@ -80,30 +78,9 @@ train_perc = 0.5
 records = Record.read(data_file)
 
 
-# records = records.map{|r| Record.new(r.id, r.attributes.first(5), r.klass)}
-
-# lambdas = SVM.calc_lambdas(records)
-
-# w = SVM.calc_w(records, lambdas)
-
-# b = SVM.calc_b(records, lambdas, w)
-
-
-
-# r1 = Record.new('1', [0.4, 0.2], 1)
-# r2 = Record.new('2', [0.7, 0.9], -1)
-
-# puts s.classify(r1)
-# puts s.classify(r2)
-
-
-
-
 train, test = split_set(records, train_perc)
 
-# train = records.first(15)
-
-st = SVM.new(train)
+svm = SVM.new(train)
 
 attrs = records.first.attributes.size
 
@@ -114,19 +91,11 @@ attrs = records.first.attributes.size
 		# vals = Array.new(attrs)
 		# vals[x] = 'x'
 		# vals[y] = 'y'
-		# filter(records, x, y, st, vals)
+		# filter(records, x, y, svm, vals)
 	# end
 # end
 
-# aaaaaaaaaaaaa
-
-
-
-# puts attrs
-
-# puts train.size
-# puts test.size
-
+puts 'train size: ' + train.size.to_s + ', test size: ' + test.size.to_s
 
 puts 'GINI train: ' + GINI(train).to_s
 puts 'GINI test: ' + GINI(test).to_s
@@ -145,11 +114,20 @@ tree = Tree.build(train, 0..(attrs - 1))
 
 puts 'testing....'
 
+puts 'tree train accuracy: ' + ((test.size - Tester.new(tree).error(train)) / test.size.to_f).to_s
+puts 'svm train accuracy: ' + ((test.size - Tester.new(svm).error(train)) / test.size.to_f).to_s
 
 err_tree = Tester.new(tree).error(test)
 accuracy_tree = (test.size - err_tree) / test.size.to_f
-puts 'accuracy_tree: ' + accuracy_tree.to_s
+puts 'tree test accuracy: ' + accuracy_tree.to_s
 
-err_svm = Tester.new(st).error(test)
+err_svm = Tester.new(svm).error(test)
 accuracy_svm = (test.size - err_svm) / test.size.to_f
-puts 'accuracy_svm: ' + accuracy_svm.to_s
+puts 'svm test accuracy: ' + accuracy_svm.to_s
+
+File.open('results.csv', 'w') do |f|
+	f.puts ['ID', (0...test.first.attributes.size).map{|a| 'attr' + a.to_s}, 'class', 'tree', 'tree_err', 'SVM', 'SVM_err'].join("\t")
+	test.each do |r|
+		f.puts [r.id, r.attributes, r.klass, tree.classify(r), (r.klass - tree.classify(r)).abs / 2, svm.classify(r), (r.klass - svm.classify(r)).abs / 2].join("\t")
+	end
+end

@@ -24,7 +24,6 @@ class Tree
 				# puts res.max_by{|e| e[1]}[0]
 				
 				res.max_by{|e| e[1]}[0]
-				# 3
 			end
 		end
 		
@@ -91,17 +90,11 @@ class Tree
 			return Leaf.new(max[0], max[1].size, records.size)
 		end
 		
-		# puts 'record count: ' + records.size.to_s
-		# puts 'attrs_remaining: ' + attrs_remaining.to_s
-		
 		best = attrs_remaining.min do |a,b|
 			split_measure(records, a) <=> split_measure(records, b)
 		end
 		
 		attrs_new = attrs_remaining.reject{|a| a == best}
-		
-		# puts 'best attrib idx: ' + best.to_s
-		# puts 'attrs_new: ' + attrs_new.to_s
 		
 		if records.group_by{|r| r.attributes[best]}.size == 1
 			node = build(records, attrs_new)
