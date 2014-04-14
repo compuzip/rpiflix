@@ -6,6 +6,12 @@ require 'lib/commons-logging-1.1.1.jar'
 require 'lib/commons-lang3-3.1.jar'
 
 class SVM
+	module Kernel
+		LINEAR = proc {|a,b| a.inner_product(b) }
+		POLY_HOMOGENOUS_2 = proc {|a,b| a.inner_product(b) ** 2 }
+	end
+
+	attr_accessor :kernel
 	attr_accessor :attMat
 	attr_accessor :yVec
 	attr_accessor :lambdas
@@ -14,6 +20,8 @@ class SVM
 	
 
 	def initialize(records)
+		@kernel = Kernel::LINEAR
+		
 		@attMat, @yVec = a_y_matrix(records)
 		
 		@lambdas = calc_lambdas
@@ -22,15 +30,16 @@ class SVM
 	end
 
 	def classify(record)
-		
-		# sum = 0.0
 		z = Vector.elements(record.attributes)
 		s = @wVec.inner_product(z) + @b
 		
-		# puts 's'
-		# puts s
-		
 		return sign(s)
+	end
+	
+	def boundary(xidx, yidx, xs)
+		xs.map do |x|
+			(-@wVec[xidx] * x - @b) / @wVec[yidx]
+		end
 	end
 	
 	private
@@ -82,8 +91,10 @@ class SVM
 		yMat = Matrix.diagonal(*@yVec)
 		
 		puts 'pMat2'
-		pMat2 = (@attMat * @attMat.transpose * yMat).transpose * yMat
-		
+		pMat2 = Matrix.build(attMat.row_size, attMat.row_size) do |row, col|
+			@kernel.call(attMat.row(row), attMat.row(col)) * yVec[row] * yVec[col]
+		end
+				
 		puts 'qVec'
 		qVec = Array.new(@attMat.row_size, -1.0)
 		
@@ -100,12 +111,16 @@ class SVM
 			g[i] = -1.0
 			com.joptimizer.functions.LinearMultivariateRealFunction.new(g, 0)
 		end
+
+		# initial point must be feasible
+		ip_map = {1 => yVec.size / @yVec.count(1).to_f, -1 => yVec.size / @yVec.count(-1).to_f}
+		ip = @yVec.map{|e| ip_map[e]}
 		
 		# optimization problem
 		oR = com.joptimizer.optimizers.OptimizationRequest.new
 		
 		oR.setF0(objectiveFunction)
-		oR.setInitialPoint(Array.new(@attMat.row_size, 0.0))
+		oR.setInitialPoint(ip)
 		
 		oR.setFi(inequalities)
 		oR.setA(aMat2.to_a.to_java([].to_java(Java::double).class))

@@ -47,17 +47,17 @@ end
 
 
 
-def filter(records, xidx, yidx, vals, idx = 0)
+def filter(records, xidx, yidx, svm, vals, idx = 0)
 	if idx == vals.size
 		name = vals.join('_')
 		puts vals.to_s + ': ' + name + ': ' + records.size.to_s
 		
-		Plot.scatter(records, xidx, yidx, 'plots/test_' + name + '_' + records.size.to_s + '.png')
+		Plot.scatter(records, xidx, yidx, svm, 'plots/test_' + name + '_' + records.size.to_s + '.png')
 		
 		# save_chart('plots/test_' + name + '_' + records.size.to_s + '.png', create_chart(records, xidx, yidx))
 	else
 		if idx == xidx or idx == yidx
-			filter(records, xidx, yidx, vals, idx + 1)
+			filter(records, xidx, yidx, svm, vals, idx + 1)
 		else	
 			records.map{|r| r.attributes[idx]}.uniq.each do |a|
 				vals[idx] = a
@@ -66,7 +66,7 @@ def filter(records, xidx, yidx, vals, idx = 0)
 				uniq = rec.uniq{|r| r.klass}
 				
 				if rec.size > 1 and uniq.size > 1
-					filter(rec, xidx, yidx, vals, idx + 1)
+					filter(rec, xidx, yidx, svm, vals, idx + 1)
 				end
 			end
 		end
@@ -79,12 +79,14 @@ end
 data_file = 'breast-cancer-wisconsin.data'
 train_perc = 0.3
 
-records = Record.read(data_file)
+# records = Record.read(data_file)
 
-# records = Record.data_p265
-# SVM.new(Record.data_p265)
+records = Record.data_p265
+st = SVM.new(Record.data_p265)
 
-# aaaaaaaaaaaaa
+puts 'w: ' + st.wVec.to_s
+puts 'b: ' + st.b.to_s
+
 
 # records = records.map{|r| Record.new(r.id, r.attributes.first(5), r.klass)}
 
@@ -107,9 +109,9 @@ records = Record.read(data_file)
 
 train, test = split_set(records, train_perc)
 
-s = SVM.new(train)
+st = SVM.new(records)
 
-attrs = train[0].attributes.size
+attrs = records.first.attributes.size
 
 Range.new(0, attrs - 2).each do |x|
 	Range.new(x + 1, attrs - 1).each do |y|
@@ -118,10 +120,11 @@ Range.new(0, attrs - 2).each do |x|
 		vals = Array.new(attrs)
 		vals[x] = 'x'
 		vals[y] = 'y'
-		filter(records, x, y, vals)
+		filter(records, x, y, st, vals)
 	end
 end
 
+aaaaaaaaaaaaa
 
 
 
