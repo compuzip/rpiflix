@@ -1,9 +1,27 @@
+# class Array
+  # def bindex element, lower = 0, upper = length - 1
+    # while upper >= lower
+      # mid = (upper + lower) / 2
+      # if self[mid] < element
+        # lower = mid + 1
+      # elsif self[mid] > element
+        # upper = mid - 1
+      # else
+        # return mid
+      # end
+    # end
+
+    # return nil
+  # end
+# end
+
 module CF
 
 	# based on http://sifter.org/~simon/Journal/20061211.html
 	class SVD < Base
 		FEATURES = 5
 		FEATURE_COLUMNS = (1..FEATURES).map {|f| "feat#{f}"}
+		FEATURE_RANGE = Range.new(1, FEATURES)
 		LRATE = 0.001
 		# LRATE = 0.01
 		# KREG = 0.02
@@ -18,57 +36,39 @@ module CF
 		end
 	
 		def train_single(mf, cf, rating)
-			
 			pred = 0.0
-			FEATURE_COLUMNS.each do |f|
+			FEATURE_RANGE.each do |f|
 				pred += mf[f] * cf[f]
 			end
 			
-			
-			err = rating.rating - pred
+			err = rating - pred
 			
 			# puts err
-			
-			FEATURE_COLUMNS.each do |f|
+
+			FEATURE_RANGE.each do |f|
 				mtemp = mf[f]
 				ctemp = cf[f]
 				
 				# puts "mtemp: #{mtemp}, ctemp: #{ctemp}"
 				
-				mf[f] += LRATE * (err * mtemp - KREG * ctemp)
-				cf[f] += LRATE * (err * ctemp - KREG * mtemp)
+				mf[f] += LRATE * (err * ctemp - KREG * mtemp)
+				cf[f] += LRATE * (err * mtemp - KREG * ctemp)
 			end
 			
-			# mf.save
-			# cf.save
-			
 			err ** 2
-			
-			# uv = userValue[user];
-			# userValue[user] += err * movieValue[movie];
-			# movieValue[movie] += err * uv;
-	
-			# userValue[user] += lrate * (err * movieValue[movie] - K * userValue[user]);
-			# movieValue[movie] += lrate * (err * userValue[user] - K * movieValue[movie]);
-	
-	
-	 # err=<double>r.rating - \
-		# predict(uOffset,vOffset, dataU, dataV, factors)
-# sumSqErr+=err*err;
-			# for k from 0<=k<factors:
-				# uTemp = dataU[uOffset+k]
-				# vTemp = dataV[vOffset+k]
-				# dataU[uOffset+k]+=lr*(err*vTemp-reg*uTemp)
-				# dataV[vOffset+k]+=lr*(err*uTemp-reg*vTemp)
 		end
 	
 		def train_do
-			m_feat = MovieFeature.order(:id).all
-			c_feat = CustomerFeature.order(:id).all
+			m_feat = MovieFeature.order(:id).pluck(:id, *FEATURE_COLUMNS, 'false')
+			c_feat = CustomerFeature.order(:id).pluck(:id, *FEATURE_COLUMNS, 'false')
+			
+			# cust id -> position lookup; to avoid custID searches
+			cust_map = Array.new(c_feat.last[0])
+			c_feat.each_index{|i| cust_map[c_feat[i][0]] = i}
 			
 			
-			sumprod = FEATURE_COLUMNS.map{|f| MovieFeature.table_name + '.' + f + ' * ' + CustomerFeature.table_name + '.' + f}.join(' + ')
 			
+			sumprod = FEATURE_COLUMNS.map{|f| MovieFeature.table_name + '.' + f + ' * ' + CustomerFeature.table_name + '.' + f}.join(' + ')		
 			
 			sql = "SELECT movie, customer, #{sumprod} AS pred FROM #{Rating.table_name}
 				JOIN #{MovieFeature.table_name} on #{Rating.table_name}.movie = #{MovieFeature.table_name}.id
@@ -84,48 +84,48 @@ module CF
 			
 			puts sql
 			
-			# aaaaaaaaaaa
 			
 			# records = Rating.order(:movie).first(10000)
-			records = Rating.where(:movie => 1..19)
+			# records = Rating.order(:movie).first(20)
+			ratings = Rating.where(:movie => 1..199).pluck(:movie, :customer, :rating)
+			# records = Rating.where(:movie => 1..3)
+			
+			puts 'records: ' + ratings.size.to_s
 		
-			(1..100).each do
+			(1..500).each do
 				sse = 0.0
 				
-				records.each do |r|				
+				ratings.each do |r|				
 					# movie ids are consecutive
-					mf = m_feat[r.movie - 1]
-					if mf.id != r.movie
-						raise "unexpected movie id: #{mf.id} vs. #{r.movie}"
+					mf = m_feat[r[0] - 1]
+					if mf[0] != r[0]
+						raise "unexpected movie id: #{mf[0]} vs. #{r[0]}"
 					end
 					
 					# customer ids not consecutive, need to search
-					cf = c_feat.bsearch {|e| r.customer <=> e.id}
-					if cf.id != r.customer
-						raise "unexpected customer id: #{cf.id} vs. #{r.customer}"
+					# cf = c_feat.bsearch{|e| r[1] <=> e[0]}
+					cf = c_feat[cust_map[r[1]]]
+					if cf[0] != r[1]
+						raise "unexpected customer id: #{cf[0]} vs. #{r[1]}"
 					end
 				
-					sse += train_single(mf, cf, r)
+					sse += train_single(mf, cf, r[2])
+					
+					mf[FEATURES + 1] = true
+					cf[FEATURES + 1] = true
 				end
-				
-				# changed = m_feat.map{|m| m.changed?}
-				# puts changed.to_s
 				
 				puts "training SSE: #{sse}"
 			end
-
-			m_feat = m_feat.select{|m| m.changed?}
-			c_feat = c_feat.select{|c| c.changed?}
 			
-			ActiveRecord::Base.transaction do
-				m_feat.each do |m|
-					m.save
-				end
-				
-				c_feat.each do |c|
-					c.save
-				end
-			end
+			m_feat = m_feat.select{|m| m[FEATURES + 1]}.map{|f| f.slice 0..FEATURES}
+			c_feat = c_feat.select{|c| c[FEATURES + 1]}.map{|f| f.slice 0..FEATURES}
+			
+			MovieFeature.delete(m_feat.map{|f| f[0]})
+			MovieFeature.import([:id] + FEATURE_COLUMNS, m_feat, :validate => false)
+			
+			CustomerFeature.delete(c_feat.map{|f| f[0]})
+			CustomerFeature.import([:id] + FEATURE_COLUMNS, c_feat, :validate => false)
 		end
 		
 		def reset_do
@@ -141,19 +141,17 @@ module CF
 				end
 			end
 
-			# initialize random feature vectors
-			zeros = Range.new(1, FEATURES).map{|f| 1.0 / f}
+			# initialize feature vectors
+			starting = Range.new(1, FEATURES).map{|f| 1.0 / f}
 			
 			puts 'initializing movie features'
 			movies = Rating.distinct.order(:movie).pluck(:movie)
-			# values = movies.map{|m| [m] + Array.new(FEATURES) {rand(0.5)}}
-			values = movies.map{|m| [m] + zeros}
+			values = movies.map{|m| [m] + starting}
 			MovieFeature.import( [:id] + FEATURE_COLUMNS, values, :validate => false)
 			
 			puts 'initializing customer features'
 			customers = Rating.distinct.order(:customer).pluck(:customer)
-			# values = customers.map{|c| [c] + Array.new(FEATURES) {rand(0.5)}}
-			values = customers.map{|c| [c] + zeros}
+			values = customers.map{|c| [c] + starting}
 			CustomerFeature.import( [:id] + FEATURE_COLUMNS, values, :validate => false)
 		end
 	
