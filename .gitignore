@@ -28,3 +28,4 @@
 # Ignore temporary files made by text editors
 *~
 *.swp
+/java/SVD/bin
