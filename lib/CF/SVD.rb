@@ -1,3 +1,5 @@
+require 'thread/pool'
+
 require 'java'
 require 'lib/java/SVD.jar'
 
@@ -41,15 +43,43 @@ module CF
 			puts 'min: ' + jSVD.minRating.to_s
 			puts 'max: ' + jSVD.maxRating.to_s
 			
+			pool = Thread.pool(3)
+			
 			offset = 0
 			m_feat.map{|f| f[0]}.each_slice(200) do |s|
 				# ratings = Rating.where(:movie => s).pluck(:movie, :customer, :rating)
 				
 				range = Range.new(s.min, s.max)
 				
-				r0 = Rating.order(:movie, :customer).where(:movie => range).pluck(:movie)
-				r1 = Rating.order(:movie, :customer).where(:movie => range).pluck(:customer)
-				r2 = Rating.order(:movie, :customer).where(:movie => range).pluck(:rating)
+				r0, r1, r2 = []
+
+				puts 'querying'
+				
+				pool.process do
+					ActiveRecord::Base.connection_pool.with_connection do
+						r0 = Rating.order(:movie, :customer).where(:movie => range).pluck(:movie).to_java(:short)
+					end
+					puts 'done with movie'
+				end
+				
+				pool.process do
+					ActiveRecord::Base.connection_pool.with_connection do
+						r1 = Rating.order(:movie, :customer).where(:movie => range).pluck(:customer).to_java(:int)
+					end
+					puts 'done with customer'
+				end
+				
+				pool.process do
+					ActiveRecord::Base.connection_pool.with_connection do
+						r2 = Rating.order(:movie, :customer).where(:movie => range).pluck(:rating).to_java(:byte)
+					end
+					puts 'done with rating'
+				end
+				
+				puts 'waiting...'
+				pool.wait_done
+				
+				puts 'calling java'
 				
 				# jSVD.setRatings(offset, ratings.map{|r| r[0]}, ratings.map{|r| r[1]}, ratings.map{|r| r[2]})
 				jSVD.setRatings(offset, r0, r1, r2)
