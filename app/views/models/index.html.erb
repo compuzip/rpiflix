@@ -1,35 +1,33 @@
-<h1>Models#index</h1>
-
 <p>
 <%= params[:notice] %>
 </p>
 
-<table border="1">
-  <tr>
-    <th>name</th>
-	<th>state</th>
-	<th>message</th>
-	<th>progress</th>
-	<th>rmse</th>
-	<th>updated</th>
-	
-	<th>reset</th>
-	<th>train</th>
-	<th>score</th>
-  </tr>
+<div class="CSSTableGenerator">
+  <table border="1">
+    <tr>
+      <th>Name</th>
+      <th>State</th>
+      <th>Message</th>
+      <th>Progress</th>
+      <th>RMSE</th>
+      <th>Updated</tb>
+      <th>Reset</th>
+      <th>Train</th>
+      <th>Score</th>
+    </tr>
  
-  <% @models.each do |model| %>
+    <% @models.each do |model| %>
     <tr>
       <td><%= model.klass %></td>
-	  <td><%= model.state %></td>
-	  <td><%= model.message %></td>
-	  <td><%= '%3.3f' % (100.0 * model.progress) %>%</td>
-	  <td><%= '%1.5f' % model.rmse %></td>
-	  <td><%= model.updated_at %></td>
-	  
-	  <td><%= link_to "Reset", reset_model_path(model), method: :post %></td>
-	  <td><%= link_to "Train", train_model_path(model), method: :post %></td>
-	  <td><%= ["trained", "scored"].to_set.member?(model.state) ? (link_to "Score", score_model_path(model)) : "not trained" %></td>
+      <td><%= model.state %></td>
+      <td><%= model.message %></td>
+      <td><%= '%3.3f' % (100.0 * model.progress) %>%</td>
+      <td><%= '%1.5f' % model.rmse %></td>
+      <td><%= model.updated_at %></td>
+      <td><%= link_to "Reset", reset_model_path(model), method: :post %></td>
+      <td><%= link_to "Train", train_model_path(model), method: :post %></td>
+      <td><%= ["trained", "scored"].to_set.member?(model.state) ? (link_to "Score", score_model_path(model)) : "not trained" %></td>
     </tr>
   <% end %>
-</table>
+  </table>
+</div>

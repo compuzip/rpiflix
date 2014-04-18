@@ -1,21 +1,33 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Rpiflix</title>
-  <%= stylesheet_link_tag    "application", media: "all", "data-turbolinks-track" => true %>
-  <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
-  <%= csrf_meta_tags %>
-</head>
-<body>
+  <head>
+    <title>Rpiflix</title>
+    <%= stylesheet_link_tag    "application", media: "all", "data-turbolinks-track" => true %>
+    <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
+    <%= csrf_meta_tags %>
+  </head>
 
-<%= link_to "HOME", "/" %>  <br>
-<%= link_to "Movies", movies_path %>  <br>
-<%= link_to "Models", models_path %>  <br>
-<%= link_to "Probes", probes_path %>
+  <body>
+    <header class="clearfix">
+      <div class="logo">
+        <a href="https://www.netflix.com" title="Netflix" target="_new"><span class="shim"></span><%= image_tag "netflix_logo_only_231@2x.png", alt: 'Netflix' %></a>
+      </div>
+      <div class="logorpi">
+        <a href="http://ewp.rpi.edu/" title="RPI" alt="RPI" target="_new"><span class="shim"></span><%= image_tag "blklogo.png" %></a>
+      </div>
 
-<hr>
+      <div class="hlinks">
+        <%= link_to '/' do %><span class="shim"></span><span class="text<% if current_page?('/') %> hlink_selected<% end %>">Home</span><% end %>
+        <%= link_to movies_path do %><span class="shim"></span><span class="text<% if params[:controller] == 'movies' %> hlink_selected<% end %>">Movies</span><% end %>
+        <%= link_to models_path, class: "msil" do %><span class="shim"></span><span class="text<% if params[:controller] == 'models' %> hlink_selected<% end %>">Models</span><% end %>
+        <%= link_to probes_path, class: "msil" do %><span class="shim"></span><span class="text<% if params[:controller] == 'probes' %> hlink_selected<% end %>">Probes</span><% end %>
+      </div>
 
-<%= yield %>
+    </header>
 
-</body>
+    <div class="main">
+        <%= yield %>
+    </div>
+
+  </body>
 </html>

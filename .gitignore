@@ -11,6 +11,9 @@
 /db/*.sqlite3
 /db/*.sqlite3-journal
 
+# Ignore the auto-generated schmea
+/db/schema.rb
+
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
@@ -22,4 +25,7 @@
 /.project
 /Gemfile.lock
 
+# Ignore temporary files made by text editors
 *~
+*.swp
+/java/SVD/bin
