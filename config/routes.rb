@@ -10,6 +10,8 @@ Rpiflix::Application.routes.draw do
   
   resources :probes, only: [:index, :show]
   
+  resources :visuals, only: [:index]
+  
   resources :models, only: [:index] do
 	post 'train', on: :member
 	post 'reset', on: :member

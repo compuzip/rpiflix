@@ -1,4 +1,5 @@
 require 'thread/pool'
+require 'histogram/array'
 
 namespace :rpiflix do
 	desc "TODO"
@@ -135,15 +136,72 @@ namespace :rpiflix do
 	
 	desc "TODO"
 	task calculateStats: :environment do
+		movie_data = Hash[Rating.group(:movie).pluck(:movie, 'count(*)', 'sum(rating)').map{|e| [e[0], [e[1], e[2]]]}]
+		
 		ActiveRecord::Base.transaction do
 			Movie.all.each do |m|
 				puts m.id.to_s + ": " + m.title
-				# puts m.attributes
-				m.rating_count = Rating.where(movie: m.id).count
-				m.rating_avg = m.rating_count > 0 ? Rating.where(movie: m.id).average('rating') : 0.0
+				m.rating_count = movie_data[m.id][0]
+				m.rating_avg = movie_data[m.id][1].to_f / movie_data[m.id][0]
 				m.save
 			end
 		end
+		
+		ActiveRecord::Base.logger = Logger.new(STDOUT)
+		
+		connection = ActiveRecord::Base.connection
+		
+		connection.create_table(Stat.table_name, force: true) do |t|
+			t.string :name
+			t.text	:data
+		end
+		
+		connection.add_index Stat.table_name, :name, unique: true
+		
+		
+		# Stat.create(:name => 'global_rating_hist', :data => Hash[Rating.group(:rating).order(:rating).pluck(:rating, 'count(*)')])
+		# Stat.create(:name => 'temp_movie_data', :data => movie_data)
+		# movie_data = Stat.where(:name => 'temp_movie_data').take.data
+		
+		
+		
+		# b = Stat.where(:name => 'global_rating_hist').take.data
+		# puts b.to_s
+		
+		# data = movie_data.map{|e| e[1][0]}
+		# puts data.to_s
+		
+		# bins,freq = data.histogram(:bins =>  :fd)
+		# bins,freq = data.histogram(:bins =>  500)
+		# puts bins.to_s
+		# puts freq.to_s
+		
+		# h2 = {}
+		# bins.each_index do |i|
+			# h2[bins[i]] = freq[i]
+		# end
+		
+		# h2 = Hash[h]
+		# puts h2.to_s
+		
+		# Stat.delete_all(:name => 'movie_rating_hist')
+		# Stat.create(:name => 'movie_rating_hist', :data => h2)
+		
+		# puts movie_data.to_s
+		
+		# movie_counts = []
+		# movie_data.each_pair do |k,v|
+			# movie_counts << [k, v[0]]
+		# end
+		
+		# puts movie_counts.to_s
+		
+		# group by rating count
+		# grouped = movie_data.group_by{|e| e[1][0]}
+		# puts grouped
+		
+		# g2 = grouped.map{|e| [e[0], e[1].length]}
+		# puts g2.to_s
 	end
 	
 	desc "TODO"

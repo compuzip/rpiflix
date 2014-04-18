@@ -53,3 +53,5 @@ gem 'kaminari'
 
 gem 'activerecord-import'
 
+gem 'chartkick'
+gem 'histogram'

@@ -23,6 +23,8 @@
   <%= @movie.tmdbid %>
 </p>
 
+<%= column_chart(@freq_data, library: {:chart => {:width => 200, :height => 200}, :title => {:text => :ratings} }) %>
+
 <% if @poster_url %>
   <img src="<%= @poster_url %>" />
 <% end %>
