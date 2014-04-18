@@ -1,0 +1,31 @@
+
+collaborative filtering in recommender systems
+	2-3 slides
+	collaborative vs. content-based filtering
+
+netflix prize
+	problem description
+		what to predict, how to score
+	dataset
+		train / test / qualifying sets
+		no qualifying answers
+	visuals
+		frequency: by rating, by movie, by customer
+	privacy concerns
+		
+rpiflix "architecture"
+	1-2 slides
+
+models
+	Average
+	Baseline
+	SVD (Latent Factor)
+
+our model results
+	(maybe combine this with individual model discussion)
+
+official Prize results
+	hundreds of models
+	blended results
+
+Ruby for scientific computing
