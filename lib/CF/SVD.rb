@@ -5,13 +5,12 @@ module CF
 
 	# based on http://sifter.org/~simon/Journal/20061211.html
 	class SVD < Base
-		FEATURES = 5
+		FEATURES = 10
 		FEATURE_COLUMNS = (1..FEATURES).map {|f| "feat#{f}"}
 		FEATURE_RANGE = Range.new(1, FEATURES)
 		LRATE = 0.001
-		# LRATE = 0.01
-		# KREG = 0.02
-		KREG = 0.0
+		KREG = 0.02
+		# KREG = 0.0
 	
 		class MovieFeature < ActiveRecord::Base
 			self.table_name_prefix = 'svd_'
@@ -71,60 +70,61 @@ module CF
 			end
 			
 			m_feat2 = jSVD.getMovieFeatures.to_a
-			m_changed = jSVD.getChangedMovies.to_a
-
 			c_feat2 = jSVD.getCustomerFeatures.to_a
-			c_changed = jSVD.getChangedCustomers.to_a
 			
 			m_update = []
 			m_feat.each_index do |i|
-				if m_changed[i]
-					m_update << [m_feat[i][0], *m_feat2[i]]
-				end
+				m_update << [m_feat[i][0], *m_feat2[i]]
 			end
-			
-			c_update = []
-			c_feat.each_index do |i|
-				if c_changed[i]
-					c_update << [c_feat[i][0], *c_feat2[i]]
-				end
-			end
-			
 			
 			MovieFeature.delete(m_update.map{|f| f[0]})
 			MovieFeature.import([:id] + FEATURE_COLUMNS, m_update, :validate => false)
 			
-			CustomerFeature.delete(c_update.map{|f| f[0]})
-			CustomerFeature.import([:id] + FEATURE_COLUMNS, c_update, :validate => false)
+			
+			c_update = []
+			c_feat.each_index do |i|
+				c_update << [c_feat[i][0], *c_feat2[i]]
+				
+				if c_update.size > 10000
+					CustomerFeature.delete(c_update.map{|f| f[0]})
+					CustomerFeature.import([:id] + FEATURE_COLUMNS, c_update, :validate => false)	
+					c_update = []
+				end
+			end
+
+			if c_update.size > 0
+				CustomerFeature.delete(c_update.map{|f| f[0]})
+				CustomerFeature.import([:id] + FEATURE_COLUMNS, c_update, :validate => false)	
+			end			
 		end
 		
 		def reset_do
 			MovieFeature.connection.create_table(MovieFeature.table_name, force: true) do |t|
 				FEATURE_COLUMNS.each do |f|				
-					t.float		f
+					t.float		f, null: false, default: 0.0
 				end
 			end
 			
 			CustomerFeature.connection.create_table(CustomerFeature.table_name, force: true) do |t|
 				FEATURE_COLUMNS.each do |f|				
-					t.float 	f
+					t.float 	f, null: false, default: 0.0
 				end
 			end
-
-			# initialize feature vectors
-			starting = Range.new(1, FEATURES).map{|f| 1.0 / f}
 			
 			puts 'initializing movie features'
-			movies = Rating.distinct.order(:movie).pluck(:movie)
-			values = movies.map{|m| [m] + starting}
-			MovieFeature.import( [:id] + FEATURE_COLUMNS, values, :validate => false)
+			movies = Rating.distinct.order(:movie).pluck(:movie).map{|m| [m]}
+			MovieFeature.import([:id], movies, :validate => false)
 			
 			puts 'initializing customer features'
-			customers = Rating.distinct.order(:customer).pluck(:customer)
-			values = customers.map{|c| [c] + starting}
-			CustomerFeature.import( [:id] + FEATURE_COLUMNS, values, :validate => false)
+			customers = Rating.distinct.order(:customer).pluck(:customer).map{|c| [c]}
+			CustomerFeature.import([:id], customers, :validate => false)
+			
+			FEATURE_COLUMNS.each_index do |i|
+				val = 1.0 / (i + 1)
+				MovieFeature.update_all(FEATURE_COLUMNS[i] + '=' + val.to_s + ' * RANDOM()')
+				CustomerFeature.update_all(FEATURE_COLUMNS[i] + '=' + val.to_s + ' * RANDOM()')
+			end
 		end
-
 	
 		def rate(movie, customer, date)
 			populate_caches

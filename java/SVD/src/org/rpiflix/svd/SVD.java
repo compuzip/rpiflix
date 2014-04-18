@@ -13,11 +13,9 @@ public class SVD {
 	private final int features;
 	
 	private final double[][] movieFeatures;
-	private final boolean[] changedMovie;
 //	private final short[] movieIDs;
 	
 	private final double[][] customerFeatures;
-	private final boolean[] changedCustomer;
 //	private final int[] customerIDs;
 	
 	public SVD(int features, int rating_count, int movie_count, int customer_count,
@@ -35,9 +33,6 @@ public class SVD {
 		
 		movieFeatures = new double[features][movie_count];
 		customerFeatures = new double[features][customer_count];
-		
-		changedMovie = new boolean[movie_count];
-		changedCustomer = new boolean[customer_count];
 		
 		customer_map = new int[maxCustomer + 1];
 		
@@ -113,10 +108,6 @@ public class SVD {
 		return ret;
 	}
 	
-	public boolean[] getChangedMovies() {
-		return changedMovie;
-	}
-	
 	public void setCustomerFeatures(double[][] customerFeatures) {
 		for(int f = 0; f < features; f++)
 			for(int c = 0; c < customerFeatures.length; c++)
@@ -131,10 +122,6 @@ public class SVD {
 				ret[c][f] = customerFeatures[f][c];
 		
 		return ret;
-	}
-	
-	public boolean[] getChangedCustomers() {
-		return changedCustomer;
 	}
 	
 	public final double calcPred(final int movie, final int customer) {
@@ -184,9 +171,6 @@ public class SVD {
 				movieFeatures[f][mID] += learnRate * (err * ctemp - regRate * mtemp);
 				customerFeatures[f][cID] += learnRate * (err * mtemp - regRate * ctemp);
 			}
-			
-			changedMovie[mID] = true;
-			changedCustomer[cID] = true;
 		}
 		
 		return Math.sqrt(sse / rating_rating.length);
