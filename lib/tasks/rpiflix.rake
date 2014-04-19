@@ -1,5 +1,4 @@
 require 'thread/pool'
-require 'histogram/array'
 
 namespace :rpiflix do
 	desc "TODO"
@@ -136,6 +135,7 @@ namespace :rpiflix do
 	
 	desc "TODO"
 	task calculateStats: :environment do
+		# movie => [count, sum]
 		movie_data = Hash[Rating.group(:movie).pluck(:movie, 'count(*)', 'sum(rating)').map{|e| [e[0], [e[1], e[2]]]}]
 		
 		ActiveRecord::Base.transaction do
@@ -147,7 +147,7 @@ namespace :rpiflix do
 			end
 		end
 		
-		ActiveRecord::Base.logger = Logger.new(STDOUT)
+		# ActiveRecord::Base.logger = Logger.new(STDOUT)
 		
 		connection = ActiveRecord::Base.connection
 		
@@ -155,53 +155,17 @@ namespace :rpiflix do
 			t.string :name
 			t.text	:data
 		end
-		
 		connection.add_index Stat.table_name, :name, unique: true
 		
+		puts 'saving global stats'
+		Stat.create(:name => 'global_rating_hist', :data => Hash[Rating.group(:rating).order(:rating).pluck(:rating, 'count(*)')])
 		
-		# Stat.create(:name => 'global_rating_hist', :data => Hash[Rating.group(:rating).order(:rating).pluck(:rating, 'count(*)')])
-		# Stat.create(:name => 'temp_movie_data', :data => movie_data)
-		# movie_data = Stat.where(:name => 'temp_movie_data').take.data
+		puts 'saving movie stats'
+		Stat.create(:name => 'movie_stats', :data => movie_data)
 		
-		
-		
-		# b = Stat.where(:name => 'global_rating_hist').take.data
-		# puts b.to_s
-		
-		# data = movie_data.map{|e| e[1][0]}
-		# puts data.to_s
-		
-		# bins,freq = data.histogram(:bins =>  :fd)
-		# bins,freq = data.histogram(:bins =>  500)
-		# puts bins.to_s
-		# puts freq.to_s
-		
-		# h2 = {}
-		# bins.each_index do |i|
-			# h2[bins[i]] = freq[i]
-		# end
-		
-		# h2 = Hash[h]
-		# puts h2.to_s
-		
-		# Stat.delete_all(:name => 'movie_rating_hist')
-		# Stat.create(:name => 'movie_rating_hist', :data => h2)
-		
-		# puts movie_data.to_s
-		
-		# movie_counts = []
-		# movie_data.each_pair do |k,v|
-			# movie_counts << [k, v[0]]
-		# end
-		
-		# puts movie_counts.to_s
-		
-		# group by rating count
-		# grouped = movie_data.group_by{|e| e[1][0]}
-		# puts grouped
-		
-		# g2 = grouped.map{|e| [e[0], e[1].length]}
-		# puts g2.to_s
+		puts 'saving customer stats'
+		# customer => [count, sum]
+		Stat.create(:name => 'customer_stats', :data => Hash[Rating.group(:customer).pluck(:customer, 'count(*)', 'sum(rating)').map{|e| [e[0], [e[1], e[2]]]}])
 	end
 	
 	desc "TODO"

@@ -1,5 +1,16 @@
 <div class="CSSTableGenerator CSSTableGeneratorPadded">
 
-<%= column_chart(@movie_rating_hist, library: {:chart => {:width => 200, :height => 200}, :title => {:text => :ratings} }) %>
+<p>
+<%= column_chart(@global_freq, library: {:chart => {:width => 1000, :height => 300}, :title => {:text => 'rating count'} }) %>
+</p>
+<hr>
+<p>
+<%= column_chart(@movie_rating_hist, library: {:chart => {:width => 1000, :height => 300}, :title => {:text => 'ratings by movie'} }) %>
+</p>
+
+<hr>
+<p>
+<%= column_chart(@customer_rating_hist, library: {:chart => {:width => 1000, :height => 300}, :title => {:text => 'ratings by customer'} }) %>
+</p>
 
 </div>
