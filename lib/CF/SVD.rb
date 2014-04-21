@@ -7,7 +7,7 @@ module CF
 
 	# based on http://sifter.org/~simon/Journal/20061211.html
 	class SVD < Base
-		FEATURES = 10
+		FEATURES = 20
 		FEATURE_COLUMNS = (1..FEATURES).map {|f| "feat#{f}"}
 		FEATURE_RANGE = Range.new(1, FEATURES)
 		LRATE = 0.001
