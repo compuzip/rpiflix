@@ -1,5 +1,7 @@
 module CF
   class KNN < Base
+    @@pearson_cache = {}
+    
     class Rating < ActiveRecord::Base
       self.primary_key = :id
     end
@@ -9,13 +11,22 @@ module CF
       
       my_ratings = []
       
-      sim = Pearson.select('movie2')
-                   .where("movie1 = #{movie}")
-                   .order("pearson desc limit 20")
+      unless @@pearson_cache.has_key?(movie)
+        sim = Pearson.select('movie2')
+                     .where("movie1 = #{movie}")
+                     .order("pearson desc limit 20")
+        
+        thiscache = []
+        sim.each do |s|
+          thiscache.push(s.movie2)
+        end
+        
+        @@pearson_cache[movie] = thiscache
+      end
       
-      sim.each do |m|
+      @@pearson_cache[movie].each do |m|
         rating = Rating.select('rating')
-                       .where("movie = #{m.movie2} and customer = #{customer}")
+                       .where("movie = #{m} and customer = #{customer}")
         
         rating.each do |r|
           my_ratings.push(r.rating)
