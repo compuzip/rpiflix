@@ -4,13 +4,35 @@
 <%= column_chart(@global_freq, library: {:chart => {:width => 1000, :height => 300}, :title => {:text => 'rating count'} }) %>
 </p>
 <hr>
+
 <p>
 <%= column_chart(@movie_rating_hist, library: {:chart => {:width => 1000, :height => 300}, :title => {:text => 'ratings by movie'} }) %>
+
+<table>
+<tr><td>min</td><td>				<%= number_with_delimiter(@movie_rating_perc[0]) %></td></tr>
+<tr><td>1st percentile</td><td>		<%= number_with_delimiter(@movie_rating_perc[1]) %></td></tr>
+<tr><td>5th percentile</td><td>		<%= number_with_delimiter(@movie_rating_perc[2]) %></td></tr>
+<tr><td>median</td><td>				<%= number_with_delimiter(@movie_rating_perc[3]) %></td></tr>
+<tr><td>95th percentile</td><td>	<%= number_with_delimiter(@movie_rating_perc[4]) %></td></tr>
+<tr><td>99th percentile</td><td>	<%= number_with_delimiter(@movie_rating_perc[5]) %></td></tr>
+<tr><td>max</td><td>				<%= number_with_delimiter(@movie_rating_perc[6]) %></td></tr>
+</table>
 </p>
 
 <hr>
 <p>
 <%= column_chart(@customer_rating_hist, library: {:chart => {:width => 1000, :height => 300}, :title => {:text => 'ratings by customer'} }) %>
+
+<table>
+<tr><td>min</td><td>				<%= number_with_delimiter(@customer_rating_perc[0]) %></td></tr>
+<tr><td>1st percentile</td><td>		<%= number_with_delimiter(@customer_rating_perc[1]) %></td></tr>
+<tr><td>5th percentile</td><td>		<%= number_with_delimiter(@customer_rating_perc[2]) %></td></tr>
+<tr><td>median</td><td>				<%= number_with_delimiter(@customer_rating_perc[3]) %></td></tr>
+<tr><td>95th percentile</td><td>	<%= number_with_delimiter(@customer_rating_perc[4]) %></td></tr>
+<tr><td>99th percentile</td><td>	<%= number_with_delimiter(@customer_rating_perc[5]) %></td></tr>
+<tr><td>max</td><td>				<%= number_with_delimiter(@customer_rating_perc[6]) %></td></tr>
+</table>
+
 </p>
 
 </div>
