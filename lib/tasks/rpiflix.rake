@@ -175,8 +175,8 @@ namespace :rpiflix do
 	  connection = ActiveRecord::Base.connection
 
 	  connection.create_table('customers', force: true, primary_key: 'customer') do |t|
-	    t.float    :rating_avg,          null: false
-	    t.integer  :rating_count,        null: false
+	    t.float    :rating_avg,          null: false, default: 0.0
+	    t.integer  :rating_count,        null: false, default: 0
 	  end
 
 	  connection.execute("insert into customers (customer) select distinct customer from ratings int")
