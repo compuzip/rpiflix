@@ -41,7 +41,7 @@
 </div>
 </div>
 <div>
-	<h2 style="padding-top: 12px;">Similar Movies</h2>
+	<h2 style="padding-top: 12px;">Similar Movies - kNN</h2>
 
 	<% @similarmovies.each do |sm| %>
 	<div style="float: left; border: 1px solid black;">
@@ -57,5 +57,22 @@
 		</table>
 	</div>
 	<% end %>
+</div>
+<div>
+	<h2 style="padding-top: 12px;">Similar Movies - SVD</h2>
 
+	<% @similarmovies_svd.each do |sm| %>
+	<div style="float: left; border: 1px solid black;">
+		<table>
+			<tr><th><a href="/movies/<%= sm['movie'].id %>"><%= sm['movie'].title %> (<%= '%1.3f' % sm['similarity'] %>)</a></th></tr>
+			<tr><td>
+				<% if @poster_urls[sm['movie'].id].nil? %>
+				<a href="/movies/<%= sm['movie'].id %>"><%= image_tag "notfound.jpg", alt: 'Image Not Found', height: 303, width: 195, style: 'padding: 10px' %></a>
+				<% else %>
+				<a href="/movies/<%= sm['movie'].id %>"><img height="303" width="195" style="padding: 10px;" src="<%= @poster_urls[sm['movie'].id] %>" /></a>
+				<% end %>
+			</td></tr>
+		</table>
+	</div>
+	<% end %>
 </div>

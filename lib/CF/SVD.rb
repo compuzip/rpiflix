@@ -167,6 +167,29 @@ module CF
 			[[pred, 5].min, 1].max
 		end
 	
+		def similar_movies(movie, count)
+			mf = MovieFeature.find(movie)
+			
+			l2 = 0.0
+			FEATURE_COLUMNS.each do |f|
+				l2 += mf[f] * mf[f]
+			end
+			l2 = Math.sqrt(l2)
+			
+			# A.B / ( ||A|| ||B|| )
+			sql_num = FEATURE_COLUMNS.map{|f| mf[f].to_s + '*' + f}.join('+')		
+			sql_den = FEATURE_COLUMNS.map{|f| f + '*' + f}.join('+')
+			
+			sql = "SELECT id, (#{sql_num}) / (#{l2} * sqrt(#{sql_den})) as similarity 
+				FROM #{MovieFeature.table_name} 
+				ORDER BY similarity DESC
+				LIMIT #{count}
+				OFFSET 1"
+			puts sql
+			
+			ActiveRecord::Base.connection.select_all(sql).to_a
+		end
+	
 	private
 		def make_customer_map cust_features
 			# cust id -> position lookup; to avoid custID searches
