@@ -135,15 +135,37 @@ namespace :rpiflix do
 	
 	desc "TODO"
 	task calculateStats: :environment do
+		# movie => [count, sum]
+		movie_data = Hash[Rating.group(:movie).pluck(:movie, 'count(*)', 'sum(rating)').map{|e| [e[0], [e[1], e[2]]]}]
+		
 		ActiveRecord::Base.transaction do
 			Movie.all.each do |m|
 				puts m.id.to_s + ": " + m.title
-				# puts m.attributes
-				m.rating_count = Rating.where(movie: m.id).count
-				m.rating_avg = m.rating_count > 0 ? Rating.where(movie: m.id).average('rating') : 0.0
+				m.rating_count = movie_data[m.id][0]
+				m.rating_avg = movie_data[m.id][1].to_f / movie_data[m.id][0]
 				m.save
 			end
 		end
+		
+		# ActiveRecord::Base.logger = Logger.new(STDOUT)
+		
+		connection = ActiveRecord::Base.connection
+		
+		connection.create_table(Stat.table_name, force: true) do |t|
+			t.string :name
+			t.text	:data
+		end
+		connection.add_index Stat.table_name, :name, unique: true
+		
+		puts 'saving global stats'
+		Stat.create(:name => 'global_rating_hist', :data => Hash[Rating.group(:rating).order(:rating).pluck(:rating, 'count(*)')])
+		
+		puts 'saving movie stats'
+		Stat.create(:name => 'movie_stats', :data => movie_data)
+		
+		puts 'saving customer stats'
+		# customer => [count, sum]
+		Stat.create(:name => 'customer_stats', :data => Hash[Rating.group(:customer).pluck(:customer, 'count(*)', 'sum(rating)').map{|e| [e[0], [e[1], e[2]]]}])
 	end
   
 	desc "TODO"

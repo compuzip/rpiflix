@@ -2,16 +2,16 @@ class Movie < ActiveRecord::Base
 	paginates_per 100
 
 	def populateTmdbData!
-		if not tmdbid
-			self.tmdbid = findTmdbID
-			
-			if tmdbid > 0
-				details = Tmdb::Movie.detail(tmdbid)
-				self.tmdbposter = details.poster_path
-			end
-			
-			save
-		end
+    unless tmdbid
+      self.tmdbid = findTmdbID
+
+      if tmdbid > 0
+        details = Tmdb::Movie.detail(tmdbid)
+        self.tmdbposter = details.poster_path
+      end
+
+      save
+    end
 	end
 	
 	private

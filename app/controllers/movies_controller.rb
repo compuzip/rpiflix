@@ -14,5 +14,8 @@ class MoviesController < ApplicationController
 		else
 			@poster_url = nil
 		end
+		
+		@freq_data = Rating.where(:movie => @movie.id).group(:rating).order(:rating).pluck(:rating, 'count(*)')
+		puts @freq_data.to_s
 	end
 end
