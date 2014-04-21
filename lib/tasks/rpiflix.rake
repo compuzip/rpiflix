@@ -145,7 +145,23 @@ namespace :rpiflix do
 			end
 		end
 	end
-	
+  
+	desc "TODO"
+	task populateCustomers: :environment do
+	  ActiveRecord::Base.logger = Logger.new(STDOUT)
+
+	  connection = ActiveRecord::Base.connection
+
+	  connection.create_table('customers', force: true, primary_key: 'customer') do |t|
+	    t.float    :rating_avg,          null: false
+	    t.integer  :rating_count,        null: false
+	  end
+
+	  connection.execute("insert into customers (customer) select distinct customer from ratings int")
+	  connection.execute("update customers set rating_avg = (select avg(rating) from ratings where customer=customers.customer)")
+	  connection.execute("update customers set rating_count = (select count(rating) from ratings where customer=customers.customer)")
+	end
+
 	desc "TODO"
 	task populateModels: :environment do
 		ActiveRecord::Base.logger = Logger.new(STDOUT)
