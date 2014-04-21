@@ -44,7 +44,7 @@
 	<h2 style="padding-top: 12px;">Similar Movies - kNN</h2>
 
 	<% @similarmovies.each do |sm| %>
-	<div style="float: left; border: 1px solid black;">
+	<div style="float: left; border: 1px solid grey;">
 		<table>
 			<tr><th><a href="/movies/<%= sm.id %>"><%= sm.title%></a></th></tr>
 			<tr><td>
@@ -58,11 +58,12 @@
 	</div>
 	<% end %>
 </div>
+<div style="display: block; clear: both;">&nbsp</div>
 <div>
 	<h2 style="padding-top: 12px;">Similar Movies - SVD</h2>
 
 	<% @similarmovies_svd.each do |sm| %>
-	<div style="float: left; border: 1px solid black;">
+	<div style="float: left; border: 1px solid grey;">
 		<table>
 			<tr><th><a href="/movies/<%= sm['movie'].id %>"><%= sm['movie'].title %> (<%= '%1.3f' % sm['similarity'] %>)</a></th></tr>
 			<tr><td>
