@@ -1,12 +1,35 @@
 class MoviesGrid
-
 	include Datagrid
 
 	scope do
 		Movie.order(:id)
 	end
-
+	
+	filter(:title, :string) do |value| 
+		where("title ilike '%#{value}%'")
+	end
+	
 	filter(:year)
+	
+	# filter(:rating_avg, :dynamic)
+	
+	filter(:rating, :string) do |value|
+		puts value
+		if value.start_with?('>') or value.start_with?('<') or value.start_with?('=')
+			where("rating_avg #{value}")
+		else
+			where("rating_avg = #{value}")
+		end
+	end
+	
+	filter(:count, :string) do |value|
+		puts value
+		if value.start_with?('>') or value.start_with?('<') or value.start_with?('=')
+			where("rating_count #{value}")
+		else
+			where("rating_count = #{value}")
+		end
+	end
 	
 	include ActionView::Helpers::UrlHelper
 
