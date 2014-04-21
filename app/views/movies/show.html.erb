@@ -1,30 +1,61 @@
-<p>
-  <strong>ID:</strong>
-  <%= @movie.id %>
-</p>
+<h1><%= @movie.title %></h1>
 
-<p>
-  <strong>Title:</strong>
-  <%= @movie.title %>
-</p>
- 
-<p>
-  <strong>Release year:</strong>
-  <%= @movie.year %>
-</p>
 
-<p>
-  <strong>Rating:</strong>
-  <%= "%2.2f" % @movie.rating_avg  %>&nbsp;&nbsp;(<%= @movie.rating_count %>)
-</p>
-
-<p>
-  <strong>tmdb ID:</strong>
-  <%= @movie.tmdbid %>
-</p>
-
-<%= column_chart(@freq_data, library: {:chart => {:width => 200, :height => 200}, :title => {:text => :ratings} }) %>
-
-<% if @poster_url %>
-  <img src="<%= @poster_url %>" />
+<div>
+<% if @poster_urls[@movie.id] %>
+<div style="display: inline-block;">
+  <img height="303" width="195" style="padding-left: 10px; margin-top: 10;" src="<%= @poster_urls[@movie.id] %>" />
+</div>
 <% end %>
+
+<div style="display: inline-block; border: 1px solid gray; height: 291px; width: 400px; padding: 5px; vertical-align: top;">
+	<table>
+		<tr>
+			<th style="text-align: left">Movie ID:</th>
+			<td style="padding-left: 1em;"><%= @movie.id %></td>
+		</tr>
+		<tr>
+			<th style="text-align: left">Title:</th>
+			<td style="padding-left: 1em;"><%= @movie.title %></td>
+		</tr>
+		<tr>
+			<th style="text-align: left">Release Year:</th>
+			<td style="padding-left: 1em;"><%= @movie.year %></td>
+		</tr>
+		<tr>
+			<th style="text-align: left">Average Rating:</th>
+			<td style="padding-left: 1em;"><%= @movie.rating_avg.round(3) %> (<%= @movie.rating_count %>)</td>
+		</tr>
+		
+		<tr>
+			<th style="text-align: left">TMDB ID:</th>
+			<% if @movie.tmdbid > 0 %>
+			<td style="padding-left: 1em;"><a href="https://www.themoviedb.org/movie/<%= @movie.tmdbid %>" target="_new"><%= @movie.tmdbid %></a></td>
+			<% else %>
+			<td style="padding-left: 1em;">No data found</td>
+			<% end %>
+		</tr>
+	</table>
+
+	<%= column_chart(@freq_data, library: {:chart => {:width => 240, :height => 200}, :title => {:text => 'Rating Distribution'} }) %>
+</div>
+</div>
+<div>
+	<h2 style="padding-top: 12px;">Similar Movies</h2>
+
+	<% @similarmovies.each do |sm| %>
+	<div style="float: left; border: 1px solid black;">
+		<table>
+			<tr><th><a href="/movies/<%= sm.id %>"><%= sm.title%></a></th></tr>
+			<tr><td>
+				<% if @poster_urls[sm.id].nil? %>
+				<a href="/movies/<%= sm.id %>"><%= image_tag "notfound.jpg", alt: 'Image Not Found', height: 303, width: 195, style: 'padding: 10px' %></a>
+				<% else %>
+				<a href="/movies/<%= sm.id %>"><img height="303" width="195" style="padding: 10px;" src="<%= @poster_urls[sm.id] %>" /></a>
+				<% end %>
+			</td></tr>
+		</table>
+	</div>
+	<% end %>
+
+</div>

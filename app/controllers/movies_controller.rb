@@ -5,15 +5,29 @@ class MoviesController < ApplicationController
 	end
   
 	def show
+	  config = Tmdb::Configuration.new
+	  
 		@movie = Movie.find(params[:id])
 		@movie.populateTmdbData!
 		
-		if @movie.tmdbid > 0
-			config = Tmdb::Configuration.new			
-			@poster_url = config.base_url + 'w500' + @movie.tmdbposter
+		@poster_urls = {}
+		
+		if @movie.tmdbid > 0		
+			@poster_urls[@movie.id] = config.base_url + 'w500' + @movie.tmdbposter
 		else
-			@poster_url = nil
+			@poster_urls[@movie.id] = nil
 		end
+		
+    @similarmovies = Pearson.get_similar_movies(@movie.id, 5)
+    
+    @similarmovies.each do |sm|
+      sm.populateTmdbData!
+      if sm.tmdbid > 0  
+        @poster_urls[sm.id] = config.base_url + 'w500' + sm.tmdbposter
+      else
+        @poster_urls[sm.id] = nil
+      end
+    end
 		
 		@freq_data = Rating.where(:movie => @movie.id).group(:rating).order(:rating).pluck(:rating, 'count(*)')
 		puts @freq_data.to_s
