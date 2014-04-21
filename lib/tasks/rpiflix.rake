@@ -184,6 +184,17 @@ namespace :rpiflix do
 	  connection.execute("update customers set rating_count = (select count(rating) from ratings where customer=customers.customer)")
 	end
 
+  desc "TODO"
+  task createPearson: :environment do
+    ActiveRecord::Base.logger = Logger.new(STDOUT)
+
+    connection = ActiveRecord::Base.connection
+
+    connection.execute("CREATE TABLE pearson (movie1 integer, movie2 integer, num integer, pearson double precision) WITH (OIDS=FALSE)")
+    connection.execute("CREATE INDEX index_pearson_pearson ON pearson USING btree (pearson)")
+    connection.execute("CREATE INDEX index_perason_movie1 ON pearson USING btree (movie1)")
+  end
+  
 	desc "TODO"
 	task populateModels: :environment do
 		ActiveRecord::Base.logger = Logger.new(STDOUT)

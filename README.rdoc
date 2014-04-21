@@ -45,8 +45,11 @@ populate 'ratings' and 'probes' tables ... this takes a while
 update movies.ratingCount and movies.ratingAvg; can take a few minutes
 	rake rpiflix:calculateStats
 
-populare 'customers' and stats for customers
+populate 'customers' and stats for customers
 	rake rpiflix:populateCustomers
+
+create 'pearson' table
+	rake rpiflix:createPearson
 
 populate 'models' table
 	rake rpiflix:populateModels
