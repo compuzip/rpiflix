@@ -1,3 +1,3 @@
 class Stat < ActiveRecord::Base
-	serialize :data, Hash
+	serialize :data
 end

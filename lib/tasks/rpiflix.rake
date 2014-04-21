@@ -1,4 +1,5 @@
 require 'thread/pool'
+require 'histogram/array'
 
 namespace :rpiflix do
 	desc "TODO"
@@ -133,6 +134,21 @@ namespace :rpiflix do
 		puts 'populated ' + Rating.count.to_s + ' ratings'
 	end
 	
+	def make_histogram(data)
+		min, max = data.minmax
+		
+		# log scale (skipping first point(s))
+		scale = (2..20).map{|v| min * Math.exp( v / 20.0 * (Math.log(max) - Math.log(min)))}		
+		bins,freq = data.histogram(:bins =>  scale)
+		
+		hist = {}
+		bins.each_index do |i|
+			hist['%10.0f' % bins[i]] = freq[i]
+		end
+		
+		hist
+	end
+	
 	desc "TODO"
 	task calculateStats: :environment do
 		# movie => [count, sum]
@@ -162,10 +178,17 @@ namespace :rpiflix do
 		
 		puts 'saving movie stats'
 		Stat.create(:name => 'movie_stats', :data => movie_data)
+		movie_data_perc = movie_data.map{|e| e[1][0]}.sort
+		Stat.create(:name => 'movie_stats_perc', :data => movie_data_perc)
+		Stat.create(:name => 'movie_stats_hist', :data => make_histogram(movie_data_perc))
 		
 		puts 'saving customer stats'
 		# customer => [count, sum]
-		Stat.create(:name => 'customer_stats', :data => Hash[Rating.group(:customer).pluck(:customer, 'count(*)', 'sum(rating)').map{|e| [e[0], [e[1], e[2]]]}])
+		customer_data = Hash[Rating.group(:customer).pluck(:customer, 'count(*)', 'sum(rating)').map{|e| [e[0], [e[1], e[2]]]}]
+		Stat.create(:name => 'customer_stats', :data => customer_data)
+		customer_data_perc = customer_data.map{|e| e[1][0]}.sort
+		Stat.create(:name => 'customer_stats_perc', :data => customer_data_perc)
+		Stat.create(:name => 'customer_stats_hist', :data => make_histogram(customer_data_perc))
 	end
   
 	desc "TODO"
